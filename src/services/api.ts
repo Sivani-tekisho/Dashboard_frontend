@@ -1,282 +1,132 @@
-// API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
-// Backend Response Interfaces
-export interface BackendDashboardSummary {
-  contacts_touched: number
-  emails_drafted: number
-  mom_coverage_percent: number
-  overdue_followups_count: number
-  cancelled_count: number
-  no_show_count: number
-  funnel_breakdown: {
-    contacts_captured: number
-    meetings_scheduled: number
-    meetings_completed: number
-    emails_drafted: number
-    emails_sent: number
-    positive_outcomes: number
-  }
+import { QueryClient } from '@tanstack/react-query';
+
+export const queryClient = new QueryClient();
+
+export const API_BASE_URL = 'http://localhost:8000';
+// Hardcoded user ID for demo purposes content
+export const DEFAULT_USER_ID = 'a70d751a-94d3-4a4f-9356-b15c8146804a';
+
+export enum DateRangePreset {
+    TODAY = "TODAY",
+    THIS_WEEK = "THIS_WEEK",
+    THIS_MONTH = "THIS_MONTH",
+    THIS_QUARTER = "THIS_QUARTER",
+    THIS_YEAR = "THIS_YEAR",
+    CUSTOM = "CUSTOM"
 }
 
-// Frontend KPI Data Interface
-export interface KPIData {
-  contactsTouched: {
-    value: number
-    change: string
-    changePercent: number
-  }
-  meetingsCompleted: {
-    value: number
-    change: string
-    changePercent: number
-  }
-  emailsDrafted: {
-    value: number
-    pending: number
-  }
-  momCoverage: {
-    value: number
-    change: string
-    changePercent: number
-  }
-  conversionRate: {
-    value: number
-    change: string
-    changePercent: number
-  }
-  hotLeads: {
-    value: number
-    requireFollowUp: number
-  }
+export interface FunnelBreakdown {
+    contacts_captured: number;
+    meetings_scheduled: number;
+    meetings_completed: number;
+    emails_drafted: number;
+    emails_sent: number;
+    positive_outcomes: number;
 }
 
-// Transform backend response to frontend format
-const transformBackendData = (backendData: BackendDashboardSummary): KPIData => {
-  // Calculate conversion rate (positive outcomes / meetings completed)
-  const conversionRate = backendData.funnel_breakdown.meetings_completed > 0
-    ? Math.round((backendData.funnel_breakdown.positive_outcomes / backendData.funnel_breakdown.meetings_completed) * 100)
-    : 0
-
-  // Calculate pending emails (drafted - sent)
-  const pendingEmails = backendData.funnel_breakdown.emails_drafted - backendData.funnel_breakdown.emails_sent
-
-  return {
-    contactsTouched: {
-      value: backendData.contacts_touched,
-      change: '+0% from last month', // Backend doesn't provide change, using placeholder
-      changePercent: 0,
-    },
-    meetingsCompleted: {
-      value: backendData.funnel_breakdown.meetings_completed,
-      change: '+0% from last month', // Backend doesn't provide change, using placeholder
-      changePercent: 0,
-    },
-    emailsDrafted: {
-      value: backendData.emails_drafted,
-      pending: Math.max(0, pendingEmails),
-    },
-    momCoverage: {
-      value: Math.round(backendData.mom_coverage_percent),
-      change: '+0% from last month', // Backend doesn't provide change, using placeholder
-      changePercent: 0,
-    },
-    conversionRate: {
-      value: conversionRate,
-      change: '+0% from last month', // Backend doesn't provide change, using placeholder
-      changePercent: 0,
-    },
-    hotLeads: {
-      value: backendData.funnel_breakdown.positive_outcomes,
-      requireFollowUp: backendData.overdue_followups_count,
-    },
-  }
+export interface DashboardSummary {
+    contacts_touched: number;
+    emails_drafted: number;
+    mom_coverage_percent: number;
+    overdue_followups_count: number;
+    cancelled_count: number;
+    no_show_count: number;
+    funnel_breakdown: FunnelBreakdown;
 }
 
-// Fetch KPIs from backend
-export const fetchKPIs = async (userId?: string, startDate?: string, endDate?: string): Promise<KPIData> => {
-  try {
-    // Build query parameters
-    const params = new URLSearchParams()
-    if (userId) {
-      params.append('user_id', userId)
-    }
-    if (startDate) {
-      params.append('start_date', startDate)
-    }
-    if (endDate) {
-      params.append('end_date', endDate)
-    }
+export interface Contact {
+    contact_id: string;
+    first_name: string | null;
+    last_name: string | null;
+    company_name: string | null;
+    email: string | null;
+    last_activity_at: string | null;
+    created_at: string | null;
+    next_follow_up_due_at: string | null;
+    next_follow_up_type: string | null;
+    last_outcome_status: string | null;
+}
 
-    const queryString = params.toString()
-    const url = `${API_BASE_URL}/api/v1/dashboard/summary${queryString ? `?${queryString}` : ''}`
+export interface CompletedMeeting {
+    meeting_id: string;
+    contact_name: string | null;
+    company_name: string | null;
+    scheduled_at: string | null;
+    status: string | null;
+    mom_exists: boolean | null;
+}
 
-    console.log('Fetching KPIs from:', url)
+export interface EmailDetail {
+    email_id: string;
+    status: string | null;
+    drafted_at: string | null;
+    subject: string | null;
+    recipient: string | null;
+}
 
-    // Add timeout to prevent hanging
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+export interface SearchResult {
+    contacts: Contact[];
+    // meetings: Meeting[];
+    // emails: Email[];
+}
 
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        // Add your auth token if needed
-        // 'Authorization': `Bearer ${token}`
-      },
-      signal: controller.signal,
-      mode: 'cors', // Explicitly set CORS mode
-    })
+export const fetchDashboardSummary = async (preset: DateRangePreset = DateRangePreset.THIS_MONTH): Promise<DashboardSummary> => {
+    const params = new URLSearchParams({
+        user_id: DEFAULT_USER_ID,
+        preset: preset
+    });
 
-    clearTimeout(timeoutId)
+    // Example: http://localhost:8000/api/v1/dashboard/summary?user_id=...&preset=THIS_MONTH
+    const response = await fetch(`${API_BASE_URL}/api/v1/dashboard/summary?${params.toString()}`);
 
     if (!response.ok) {
-      // Try to get error details from response
-      let errorMessage = `HTTP error! status: ${response.status}`
-      try {
-        const errorData = await response.json()
-        if (errorData.detail) {
-          errorMessage = `${errorMessage} - ${JSON.stringify(errorData.detail)}`
-        } else if (errorData.message) {
-          errorMessage = `${errorMessage} - ${errorData.message}`
-        }
-      } catch (e) {
-        // If response is not JSON, use status text
-        errorMessage = `${errorMessage} - ${response.statusText}`
-      }
-      console.error('Backend error response:', errorMessage)
-      throw new Error(errorMessage)
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
     }
 
-    const backendData: BackendDashboardSummary = await response.json()
-    console.log('Successfully fetched KPIs:', backendData)
-    return transformBackendData(backendData)
-  } catch (error) {
-    if (error instanceof Error) {
-      if (error.name === 'AbortError') {
-        console.error('Request timeout: Backend server not responding')
-        throw new Error('Backend connection timeout - Is the server running?')
-      }
-      if (error.message.includes('fetch')) {
-        console.error('Network error: Cannot reach backend server')
-        throw new Error('Cannot connect to backend - Check if server is running on port 8000')
-      }
-    }
-    console.error('Error fetching KPIs:', error)
-    throw error
-  }
-}
+    return response.json();
+};
 
-// Industry Distribution endpoint
-export interface IndustryStat {
-  industry: string | null
-  count: number
-}
+export const fetchContacts = async (query: string = ''): Promise<SearchResult> => {
+    // Re-using search endpoint to get all contacts if query is empty (or a space if backend requires min length)
+    // The backend search might require min_length=1. Let's use wildcard '%' or a generic term if needed.
+    // If backend requires min_length 1, we can try searching for something common or create a "get all" endpoint.
+    // Based on search_global in backend, it uses ilike %query%. Using 'a' or '@' is a hack.
+    // Ideally we should have a GET /contacts endpoint.
+    // For now we try searching for '@' (common in emails) or check if we can add a simple get_contacts endpoint.
+    // Let's assume we can search for '@' or just ' ' if backend allows.
+    // The previous analysis showed search_global requires min_length=1.
 
-export const fetchIndustryDistribution = async (
-  startDate?: string,
-  endDate?: string
-): Promise<IndustryStat[]> => {
-  try {
-    const params = new URLSearchParams()
-    if (startDate) {
-      params.append('start_date', startDate)
-    }
-    if (endDate) {
-      params.append('end_date', endDate)
-    }
+    const params = new URLSearchParams({
+        user_id: DEFAULT_USER_ID,
+        query: query || '@' // Using @ as mostly everyone has an email
+    });
 
-    const queryString = params.toString()
-    const url = `${API_BASE_URL}/analytics/industry-distribution${queryString ? `?${queryString}` : ''}`
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
+    const response = await fetch(`${API_BASE_URL}/api/v1/search?${params.toString()}`);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
     }
-
-    return await response.json()
-  } catch (error) {
-    console.error('Error fetching industry distribution:', error)
-    throw error
-  }
+    return response.json();
 }
 
-// Daily Scans endpoint
-export interface DailyScanStat {
-  date: string
-  count: number
-}
-
-export const fetchDailyScans = async (): Promise<DailyScanStat[]> => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/analytics/daily-scans`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
+export const fetchCompletedMeetings = async (): Promise<CompletedMeeting[]> => {
+    const params = new URLSearchParams({
+        user_id: DEFAULT_USER_ID
+    });
+    const response = await fetch(`${API_BASE_URL}/api/v1/meetings/completed?${params.toString()}`);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
     }
-
-    return await response.json()
-  } catch (error) {
-    console.error('Error fetching daily scans:', error)
-    throw error
-  }
+    return response.json();
 }
 
-// Health check endpoint
-export const checkHealth = async (): Promise<{ status: string }> => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/health`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
+export const fetchDraftedEmails = async (): Promise<EmailDetail[]> => {
+    const params = new URLSearchParams({
+        user_id: DEFAULT_USER_ID
+    });
+    const response = await fetch(`${API_BASE_URL}/api/v1/emails/drafted?${params.toString()}`);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
     }
-
-    return await response.json()
-  } catch (error) {
-    console.error('Error checking health:', error)
-    throw error
-  }
+    return response.json();
 }
-
-// Generic API call function for other endpoints
-export const apiCall = async <T>(
-  endpoint: string,
-  options?: RequestInit
-): Promise<T> => {
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const data = await response.json()
-    return data
-  } catch (error) {
-    console.error(`Error calling API ${endpoint}:`, error)
-    throw error
-  }
-}
-

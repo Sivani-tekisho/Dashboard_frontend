@@ -1,4 +1,26 @@
+import { fetchContacts, type SearchResult } from '../../../services/api'
+import { useQuery } from '@tanstack/react-query'
+import { formatDistanceToNow } from 'date-fns'
+
 const ContactsTouched = () => {
+  // Use useQuery to fetch contacts. 
+  // We're fetching all contacts (conceptually "touched") by not providing a specific query or relying on default behavior if API supports it.
+  // Ideally, "Contacts Touched" implies contacts with interactions. The Search API might return all contacts for now.
+  const { data: searchResult, isLoading, error } = useQuery<SearchResult, Error>({
+    queryKey: ['contactsTouched'],
+    queryFn: () => fetchContacts(''), // Empty query to hopefully get all or relevant contacts
+  })
+
+  const contacts = searchResult?.contacts || []
+
+  if (isLoading) {
+    return <div className="p-10 flex justify-center"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div></div>
+  }
+
+  if (error) {
+    return <div className="p-10 text-red-500">Error loading contacts: {error.message}</div>
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -10,8 +32,9 @@ const ContactsTouched = () => {
         <div className="flex items-center justify-between mb-6">
           <div>
             <p className="text-slate-600 text-sm mb-1">Total Contacts</p>
-            <p className="text-4xl font-bold text-blue-600">142</p>
-            <p className="text-green-600 text-sm font-medium mt-2">+12% from last month</p>
+            <p className="text-4xl font-bold text-blue-600">{contacts.length}</p>
+            {/* Change KPI not yet available from backend */}
+            {/* <p className="text-green-600 text-sm font-medium mt-2">+12% from last month</p> */}
           </div>
           <div className="w-20 h-20 bg-blue-50 rounded-lg flex items-center justify-center">
             <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -24,27 +47,28 @@ const ContactsTouched = () => {
       <div className="bg-white rounded-xl p-6 shadow-lg border border-slate-200">
         <h2 className="text-xl font-semibold text-slate-800 mb-4">Recent Contacts</h2>
         <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-100">
-            <div>
-              <p className="font-medium text-slate-800">John Smith</p>
-              <p className="text-sm text-slate-600">john.smith@example.com</p>
-            </div>
-            <span className="text-sm text-slate-500">2 days ago</span>
-          </div>
-          <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-100">
-            <div>
-              <p className="font-medium text-slate-800">Sarah Johnson</p>
-              <p className="text-sm text-slate-600">sarah.j@example.com</p>
-            </div>
-            <span className="text-sm text-slate-500">3 days ago</span>
-          </div>
-          <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-100">
-            <div>
-              <p className="font-medium text-slate-800">Mike Davis</p>
-              <p className="text-sm text-slate-600">mike.davis@example.com</p>
-            </div>
-            <span className="text-sm text-slate-500">5 days ago</span>
-          </div>
+          {contacts.length === 0 ? (
+            <p className="text-slate-500 text-sm">No contacts found.</p>
+          ) : (
+            contacts.slice(0, 10).map((contact) => (
+              <div key={contact.contact_id} className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-100">
+                <div>
+                  <p className="font-medium text-slate-800">
+                    {contact.first_name} {contact.last_name}
+                    {contact.company_name && <span className="text-slate-500 font-normal ml-2">({contact.company_name})</span>}
+                  </p>
+                  <p className="text-sm text-slate-600">{contact.email || 'No email'}</p>
+                </div>
+                <span className="text-sm text-slate-500">
+                  {contact.created_at
+                    ? formatDistanceToNow(new Date(contact.created_at), { addSuffix: true })
+                    : (contact.last_activity_at
+                      ? formatDistanceToNow(new Date(contact.last_activity_at), { addSuffix: true })
+                      : 'No activity')}
+                </span>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

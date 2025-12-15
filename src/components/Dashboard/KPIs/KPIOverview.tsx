@@ -1,165 +1,117 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { useAppDispatch } from '../../../store/hooks'
 import { setActiveSubSection } from '../../../store/slices/dashboardSlice'
-import { fetchKPIs, type KPIData } from '../../../services/api'
+import { fetchDashboardSummary, DateRangePreset, type DashboardSummary } from '../../../services/api'
 
 const KPIOverview = () => {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
-  const [kpiData, setKpiData] = useState<KPIData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    let isMounted = true
-    
-    const loadKPIs = async () => {
-      try {
-        if (!isMounted) return
-        
-        setLoading(true)
-        setError(null)
-        
-        // TODO: Replace with actual user_id when available
-        // For now, you need to provide a user_id - backend requires it
-        // Example: const data = await fetchKPIs('your-user-uuid-here')
-        // Or modify backend to make user_id optional for testing
-        
-        // Try to fetch without user_id first (will fail if backend requires it)
-        const data = await fetchKPIs()
-        
-        if (!isMounted) return
-        setKpiData(data)
-      } catch (err: any) {
-        if (!isMounted) return
-        
-        const errorMessage = err?.message || 'Failed to load KPIs. Please check your backend connection.'
-        setError(errorMessage)
-        console.error('Error loading KPIs:', err)
-        
-        // Set fallback data for testing if backend is not available
-        setKpiData({
-          contactsTouched: { value: 142, change: '+12% from last month', changePercent: 12 },
-          meetingsCompleted: { value: 28, change: '+8% from last month', changePercent: 8 },
-          emailsDrafted: { value: 35, pending: 5 },
-          momCoverage: { value: 89, change: '+5% from last month', changePercent: 5 },
-          conversionRate: { value: 24, change: '+3% from last month', changePercent: 3 },
-          hotLeads: { value: 18, requireFollowUp: 12 },
-        })
-      } finally {
-        if (isMounted) {
-          setLoading(false)
-        }
-      }
-    }
+  // TODO: Add date range selector in UI to control this state
+  const selectedPreset = DateRangePreset.THIS_MONTH
 
-    loadKPIs()
-    
-    // Optional: Refresh every 30 seconds (increased from 30s to reduce flickering)
-    const interval = setInterval(() => {
-      if (isMounted) {
-        loadKPIs()
-      }
-    }, 60000) // Changed to 60 seconds
-    
-    return () => {
-      isMounted = false
-      clearInterval(interval)
-    }
-  }, [])
+  const { data: summaryData, isLoading, error } = useQuery<DashboardSummary, Error>({
+    queryKey: ['dashboardSummary', selectedPreset],
+    queryFn: () => fetchDashboardSummary(selectedPreset),
+    refetchInterval: 60000, // Refresh every 60s
+  })
 
   // Memoize kpiCards to prevent re-creation on every render
   const kpiCards = useMemo(() => {
-    if (!kpiData) return []
-    
-    return [
-    {
-      id: 'contacts-touched',
-      title: 'Contacts Touched',
-      value: kpiData.contactsTouched.value.toString(),
-      change: kpiData.contactsTouched.change,
-      changeType: 'positive',
-      icon: (
-        <div className="w-12 h-12 bg-brand-primary/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-          </svg>
-        </div>
-      ),
-    },
-    {
-      id: 'meetings-completed',
-      title: 'Meetings Completed',
-      value: kpiData.meetingsCompleted.value.toString(),
-      change: kpiData.meetingsCompleted.change,
-      changeType: 'positive',
-      icon: (
-        <div className="w-12 h-12 bg-brand-primary/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-        </div>
-      ),
-    },
-    {
-      id: 'emails-drafted',
-      title: 'Emails Drafted',
-      value: kpiData.emailsDrafted.value.toString(),
-      additionalInfo: `${kpiData.emailsDrafted.pending} pending send`,
-      icon: (
-        <div className="w-12 h-12 bg-brand-light rounded-lg flex items-center justify-center">
-          <svg className="w-6 h-6 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-          </svg>
-        </div>
-      ),
-    },
-    {
-      id: null, // No specific page for MoM Coverage
-      title: 'MoM Coverage',
-      value: `${kpiData.momCoverage.value}%`,
-      change: kpiData.momCoverage.change,
-      changeType: 'positive',
-      icon: (
-        <div className="w-12 h-12 bg-brand-primary/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-        </div>
-      ),
-    },
-    {
-      id: 'conversion-rate',
-      title: 'Conversion Rate',
-      value: `${kpiData.conversionRate.value}%`,
-      change: kpiData.conversionRate.change,
-      changeType: 'positive',
-      icon: (
-        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-          <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
-        </div>
-      ),
-    },
-    {
-      id: 'leads', // Navigate to leads page
-      title: 'Leads',
-      value: kpiData.hotLeads.value.toString(),
-      additionalInfo: `${kpiData.hotLeads.requireFollowUp} require follow-up`,
-      icon: (
-        <div className="w-12 h-12 bg-brand-primary/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
-        </div>
-      ),
-    },
-  ]
-  }, [kpiData])
+    if (!summaryData) return []
 
-  if (loading) {
+    // Calculate conversion rate safely
+    const contactsCaptured = summaryData.funnel_breakdown.contacts_captured || 0
+    const positiveOutcomes = summaryData.funnel_breakdown.positive_outcomes || 0
+    const conversionRateVal = contactsCaptured > 0
+      ? Math.round((positiveOutcomes / contactsCaptured) * 100)
+      : 0
+
+    return [
+      {
+        id: 'contacts-touched',
+        title: 'Contacts Touched',
+        value: summaryData.contacts_touched.toString(),
+        // Backend doesn't provide change % yet, hiding or generic for now
+        // change: '+12% from last month', 
+        // changeType: 'positive',
+        icon: (
+          <div className="w-12 h-12 bg-brand-primary/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          </div>
+        ),
+      },
+      {
+        id: 'meetings-completed',
+        title: 'Meetings Completed',
+        value: summaryData.funnel_breakdown.meetings_completed.toString(),
+        icon: (
+          <div className="w-12 h-12 bg-brand-primary/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+        ),
+      },
+      {
+        id: 'emails-drafted',
+        title: 'Emails Drafted',
+        value: summaryData.emails_drafted.toString(),
+        additionalInfo: `${summaryData.emails_drafted} pending send`, // Assuming drafted means pending
+        icon: (
+          <div className="w-12 h-12 bg-brand-light rounded-lg flex items-center justify-center">
+            <svg className="w-6 h-6 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
+        ),
+      },
+      {
+        id: null,
+        title: 'MoM Coverage',
+        value: `${summaryData.mom_coverage_percent}%`,
+        icon: (
+          <div className="w-12 h-12 bg-brand-primary/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+        ),
+      },
+      {
+        id: 'conversion-rate',
+        title: 'Conversion Rate',
+        value: `${conversionRateVal}%`,
+        // change: '+3% from last month',
+        icon: (
+          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+        ),
+      },
+      {
+        id: 'leads',
+        title: 'Leads',
+        value: summaryData.funnel_breakdown.positive_outcomes.toString(),
+        additionalInfo: `${summaryData.overdue_followups_count} require follow-up`,
+        icon: (
+          <div className="w-12 h-12 bg-brand-primary/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+        ),
+      },
+    ]
+  }, [summaryData])
+
+  if (isLoading) {
     return (
       <div className="space-y-6">
         <div>
@@ -176,7 +128,7 @@ const KPIOverview = () => {
     )
   }
 
-  if (error && !kpiData) {
+  if (error) {
     return (
       <div className="space-y-6">
         <div>
@@ -184,15 +136,16 @@ const KPIOverview = () => {
           <p className="text-gray-600 text-sm">Track your key performance indicators</p>
         </div>
         <div className="bg-white rounded-lg p-6 border border-red-200">
-          <p className="text-red-600 font-medium mb-2">Error: {error}</p>
-          <div className="text-red-500 text-sm space-y-1">
-            <p><strong>Common issues:</strong></p>
-            <ul className="list-disc list-inside ml-2 space-y-1">
-              <li>Backend requires <code className="bg-red-100 px-1 rounded">user_id</code> parameter - check console for details</li>
-              <li>Make sure backend is running at http://localhost:8000</li>
-              <li>Backend command: <code className="bg-red-100 px-1 rounded">uvicorn main:app --reload --host 0.0.0.0 --port 8000</code></li>
-              <li>Check browser console (F12) for full error details</li>
-            </ul>
+          <p className="text-red-600 font-medium mb-2">Error loading data</p>
+          <p className="text-gray-500 text-sm">{(error as Error).message}</p>
+          <div className="mt-4">
+            {/* Fallback info or retry button could go here */}
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+            >
+              Retry
+            </button>
           </div>
         </div>
       </div>
@@ -221,7 +174,7 @@ const KPIOverview = () => {
               </div>
             </div>
           </button>
-          
+
           {/* Start Meeting */}
           <button
             onClick={() => navigate('/meetings')}
@@ -238,7 +191,7 @@ const KPIOverview = () => {
               </div>
             </div>
           </button>
-          
+
           {/* Draft Email */}
           <button
             onClick={() => navigate('/emails')}
@@ -263,11 +216,6 @@ const KPIOverview = () => {
           <h2 className="text-xl font-bold text-slate-800 mb-1">KPIs Overview</h2>
           <p className="text-slate-500 text-sm">Track your key performance indicators</p>
         </div>
-        {error && (
-          <div className="bg-amber-50 rounded-lg px-4 py-2 border border-amber-200">
-            <p className="text-amber-700 text-sm">⚠️ Using fallback data</p>
-          </div>
-        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -281,9 +229,8 @@ const KPIOverview = () => {
                 dispatch(setActiveSubSection(card.id))
               }
             }}
-            className={`bg-white border border-slate-200 rounded-2xl p-6 transition-all hover:shadow-lg ${
-              card.id ? 'cursor-pointer hover:border-blue-300' : ''
-            }`}
+            className={`bg-white border border-slate-200 rounded-2xl p-6 transition-all hover:shadow-lg ${card.id ? 'cursor-pointer hover:border-blue-300' : ''
+              }`}
           >
             <div className="flex items-start justify-between mb-3">
               <div className="flex-1">
@@ -291,22 +238,17 @@ const KPIOverview = () => {
                 <p className="text-4xl font-bold text-blue-600">{card.value}</p>
               </div>
               <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center">
-                <svg className="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  {index === 0 && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />}
-                  {index === 1 && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />}
-                  {index === 2 && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />}
-                  {index === 3 && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />}
-                  {index === 4 && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />}
-                  {index === 5 && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />}
-                </svg>
+                {card.icon}
               </div>
             </div>
+            {/* Removed change logic for now as it's not in backend
             {card.change && (
               <p className="text-green-600 text-sm font-medium flex items-center gap-1">
                 <span>↑</span>
                 {card.change}
               </p>
             )}
+            */}
             {card.additionalInfo && (
               <p className="text-slate-500 text-sm mt-2">{card.additionalInfo}</p>
             )}
@@ -314,6 +256,7 @@ const KPIOverview = () => {
         ))}
       </div>
 
+      {/* ... keeping the rest of the component (chart etc) ... */}
       {/* Performance Trend Section */}
       <div className="bg-white border border-slate-200 rounded-2xl p-6 mt-6">
         <h2 className="text-lg font-bold text-blue-900 mb-4">Performance Trend</h2>
@@ -328,36 +271,36 @@ const KPIOverview = () => {
               <span>25</span>
               <span>0</span>
             </div>
-            
+
             {/* Chart bars */}
             <div className="flex-1 flex items-end justify-around gap-2 ml-8 mr-4">
               <div className="flex flex-col items-center gap-2 flex-1">
-                <div className="w-full bg-blue-500 rounded-t-lg hover:bg-blue-600 transition-all cursor-pointer" style={{height: '60%'}}></div>
+                <div className="w-full bg-blue-500 rounded-t-lg hover:bg-blue-600 transition-all cursor-pointer" style={{ height: '60%' }}></div>
                 <span className="text-xs text-slate-500">Jan</span>
               </div>
               <div className="flex flex-col items-center gap-2 flex-1">
-                <div className="w-full bg-blue-500 rounded-t-lg hover:bg-blue-600 transition-all cursor-pointer" style={{height: '75%'}}></div>
+                <div className="w-full bg-blue-500 rounded-t-lg hover:bg-blue-600 transition-all cursor-pointer" style={{ height: '75%' }}></div>
                 <span className="text-xs text-slate-500">Feb</span>
               </div>
               <div className="flex flex-col items-center gap-2 flex-1">
-                <div className="w-full bg-blue-500 rounded-t-lg hover:bg-blue-600 transition-all cursor-pointer" style={{height: '55%'}}></div>
+                <div className="w-full bg-blue-500 rounded-t-lg hover:bg-blue-600 transition-all cursor-pointer" style={{ height: '55%' }}></div>
                 <span className="text-xs text-slate-500">Mar</span>
               </div>
               <div className="flex flex-col items-center gap-2 flex-1">
-                <div className="w-full bg-blue-500 rounded-t-lg hover:bg-blue-600 transition-all cursor-pointer" style={{height: '85%'}}></div>
+                <div className="w-full bg-blue-500 rounded-t-lg hover:bg-blue-600 transition-all cursor-pointer" style={{ height: '85%' }}></div>
                 <span className="text-xs text-slate-500">Apr</span>
               </div>
               <div className="flex flex-col items-center gap-2 flex-1">
-                <div className="w-full bg-blue-500 rounded-t-lg hover:bg-blue-600 transition-all cursor-pointer" style={{height: '70%'}}></div>
+                <div className="w-full bg-blue-500 rounded-t-lg hover:bg-blue-600 transition-all cursor-pointer" style={{ height: '70%' }}></div>
                 <span className="text-xs text-slate-500">May</span>
               </div>
               <div className="flex flex-col items-center gap-2 flex-1">
-                <div className="w-full bg-blue-600 rounded-t-lg hover:bg-blue-700 transition-all cursor-pointer shadow-lg" style={{height: '95%'}}></div>
+                <div className="w-full bg-blue-600 rounded-t-lg hover:bg-blue-700 transition-all cursor-pointer shadow-lg" style={{ height: '95%' }}></div>
                 <span className="text-xs text-slate-700 font-semibold">Jun</span>
               </div>
             </div>
           </div>
-          
+
           {/* Legend */}
           <div className="absolute top-4 right-4 flex items-center gap-4 text-xs">
             <div className="flex items-center gap-2">
