@@ -12,8 +12,19 @@ const Meetings = () => {
       <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-1">Meetings</h1>
-            <p className="text-slate-600 text-sm">Manage your meetings and schedule follow-ups</p>
+            <div className="flex items-center space-x-3 mb-1">
+              <button
+                onClick={() => navigate(-1)}
+                className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                title="Go back"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <h1 className="text-2xl font-bold text-slate-900">Meetings</h1>
+            </div>
+            <p className="text-slate-600 text-sm ml-11">Manage your meetings and schedule follow-ups</p>
           </div>
           <button 
             onClick={() => navigate('/meetings')}

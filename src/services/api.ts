@@ -130,3 +130,4 @@ export const fetchDraftedEmails = async (): Promise<EmailDetail[]> => {
     }
     return response.json();
 }
+1
