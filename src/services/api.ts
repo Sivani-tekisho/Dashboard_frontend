@@ -113,6 +113,10 @@ export const fetchKPIs = async (userId?: string, startDate?: string, endDate?: s
 
     console.log('Fetching KPIs from:', url)
 
+    // Add timeout to prevent hanging
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -120,7 +124,11 @@ export const fetchKPIs = async (userId?: string, startDate?: string, endDate?: s
         // Add your auth token if needed
         // 'Authorization': `Bearer ${token}`
       },
+      signal: controller.signal,
+      mode: 'cors', // Explicitly set CORS mode
     })
+
+    clearTimeout(timeoutId)
 
     if (!response.ok) {
       // Try to get error details from response
@@ -144,6 +152,16 @@ export const fetchKPIs = async (userId?: string, startDate?: string, endDate?: s
     console.log('Successfully fetched KPIs:', backendData)
     return transformBackendData(backendData)
   } catch (error) {
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        console.error('Request timeout: Backend server not responding')
+        throw new Error('Backend connection timeout - Is the server running?')
+      }
+      if (error.message.includes('fetch')) {
+        console.error('Network error: Cannot reach backend server')
+        throw new Error('Cannot connect to backend - Check if server is running on port 8000')
+      }
+    }
     console.error('Error fetching KPIs:', error)
     throw error
   }

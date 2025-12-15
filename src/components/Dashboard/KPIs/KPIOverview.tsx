@@ -1,10 +1,12 @@
 import { useEffect, useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAppDispatch } from '../../../store/hooks'
 import { setActiveSubSection } from '../../../store/slices/dashboardSlice'
 import { fetchKPIs, type KPIData } from '../../../services/api'
 
 const KPIOverview = () => {
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
   const [kpiData, setKpiData] = useState<KPIData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -142,14 +144,14 @@ const KPIOverview = () => {
       ),
     },
     {
-      id: null, // No specific page for Hot Leads
-      title: 'Hot Leads',
+      id: 'leads', // Navigate to leads page
+      title: 'Leads',
       value: kpiData.hotLeads.value.toString(),
       additionalInfo: `${kpiData.hotLeads.requireFollowUp} require follow-up`,
       icon: (
         <div className="w-12 h-12 bg-brand-primary/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
           <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
         </div>
       ),
@@ -199,6 +201,63 @@ const KPIOverview = () => {
 
   return (
     <div className="space-y-6">
+      {/* Quick Actions Section */}
+      <div>
+        <h2 className="text-xl font-bold text-slate-800 mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Card Scanner */}
+          <button
+            onClick={() => navigate('/card-scanner')}
+            className="bg-blue-50/70 backdrop-blur-sm rounded-2xl p-5 hover:shadow-lg hover:scale-105 transition-all text-left"
+          >
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">Card Scanner</h3>
+              </div>
+            </div>
+          </button>
+          
+          {/* Start Meeting */}
+          <button
+            onClick={() => navigate('/meetings')}
+            className="bg-blue-50/70 backdrop-blur-sm rounded-2xl p-5 hover:shadow-lg hover:scale-105 transition-all text-left"
+          >
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">Meeting</h3>
+              </div>
+            </div>
+          </button>
+          
+          {/* Draft Email */}
+          <button
+            onClick={() => navigate('/emails')}
+            className="bg-blue-50/70 backdrop-blur-sm rounded-2xl p-5 hover:shadow-lg hover:scale-105 transition-all text-left"
+          >
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">Email</h3>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-slate-800 mb-1">KPIs Overview</h2>
@@ -216,7 +275,9 @@ const KPIOverview = () => {
           <div
             key={index}
             onClick={() => {
-              if (card.id) {
+              if (card.id === 'leads') {
+                navigate('/leads')
+              } else if (card.id) {
                 dispatch(setActiveSubSection(card.id))
               }
             }}
@@ -236,7 +297,7 @@ const KPIOverview = () => {
                   {index === 2 && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />}
                   {index === 3 && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />}
                   {index === 4 && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />}
-                  {index === 5 && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />}
+                  {index === 5 && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />}
                 </svg>
               </div>
             </div>

@@ -4,6 +4,7 @@ import { useAppSelector } from '../../store/hooks'
 import TeamPerformanceOverview from './TeamPerformanceOverview'
 import KPIOverview from './KPIs/KPIOverview'
 import PerformanceAnalytics from './PerformanceAnalytics'
+import QuickActions from './QuickActions'
 import ContactsTouched from './KPIs/ContactsTouched'
 import MeetingsCompleted from './KPIs/MeetingsCompleted'
 import EmailsDrafted from './KPIs/EmailsDrafted'
@@ -212,7 +213,7 @@ const DashboardContent = () => {
                   </button>
                 </div>
               </div>
-              <div className="border-l-4 border-cyan-600 pl-4 py-3 bg-cyan-50 rounded-r-lg">
+              <div className="border-l-4 border-blue-600 pl-4 py-3 bg-blue-50 rounded-r-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <p className="font-semibold text-slate-900">Team Standup</p>
@@ -221,13 +222,13 @@ const DashboardContent = () => {
                   </div>
                   <button 
                     onClick={() => navigate('/meetings')}
-                    className="bg-gradient-to-r from-cyan-400 to-cyan-500 text-white px-4 py-2 rounded-lg hover:from-cyan-500 hover:to-cyan-600 transition-all text-sm ml-4"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm ml-4"
                   >
                     Join Meeting
                   </button>
                 </div>
               </div>
-              <div className="border-l-4 border-blue-700 pl-4 py-3 bg-blue-100 rounded-r-lg">
+              <div className="border-l-4 border-blue-600 pl-4 py-3 bg-blue-50 rounded-r-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <p className="font-semibold text-slate-900">Sales Pipeline Review</p>
@@ -248,6 +249,9 @@ const DashboardContent = () => {
       default:
         return (
           <div className="space-y-6">
+            {/* Quick Actions */}
+            <QuickActions />
+
             {/* Overview Metrics */}
             <div>
               <h2 className="text-lg font-semibold text-slate-900 mb-4">Overview</h2>
@@ -333,30 +337,24 @@ const DashboardContent = () => {
             <p className="text-slate-500 text-sm">{currentDate}</p>
           </div>
 
-          {/* Search and Filters */}
+          {/* Search and Filter */}
           <div className="flex items-center space-x-3">
             <div className="relative">
               <input
                 type="text"
                 placeholder="Search contacts or companies..."
-                className="bg-white border border-slate-200 rounded-lg pl-10 pr-4 py-2 text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-sm w-64"
+                className="bg-white/60 backdrop-blur-md border border-slate-200/50 rounded-lg pl-10 pr-4 py-2 text-slate-700 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100/50 text-sm w-64"
               />
               <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
-            <select className="bg-white border border-slate-200 rounded-lg px-4 py-2 text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-sm">
+            <select className="bg-white/60 backdrop-blur-md border border-slate-200/50 rounded-lg px-4 py-2 text-slate-700 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100/50 text-sm">
               <option>This Month</option>
               <option>This Week</option>
               <option>Quarter</option>
               <option>This Year</option>
             </select>
-            <button className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-50 transition-all flex items-center space-x-2 text-sm">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-              <span>Filters</span>
-            </button>
           </div>
         </div>
       </div>

@@ -8,7 +8,7 @@ const Navbar = () => {
   }
 
   return (
-    <nav className="bg-white border-b border-slate-200">
+    <nav className="bg-white/80 backdrop-blur-md border-b border-slate-200/50 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo - hidden as shown in screenshot */}
@@ -22,10 +22,10 @@ const Navbar = () => {
           <div className="flex items-center space-x-1">
             <Link
               to="/"
-              className={`px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
+              className={`px-4 py-2 rounded-lg transition-all flex items-center space-x-2 ${
                 isActive('/')
-                  ? 'text-blue-600 bg-blue-50'
-                  : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
+                  ? 'text-blue-600 bg-blue-50/70 backdrop-blur-sm'
+                  : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50/70'
               }`}
             >
               <svg
@@ -46,10 +46,10 @@ const Navbar = () => {
 
             <Link
               to="/card-scanner"
-              className={`px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
+              className={`px-4 py-2 rounded-lg transition-all flex items-center space-x-2 ${
                 isActive('/card-scanner')
-                  ? 'text-blue-600 bg-blue-50'
-                  : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
+                  ? 'text-blue-600 bg-blue-50/70 backdrop-blur-sm'
+                  : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50/70'
               }`}
             >
               <svg
@@ -70,10 +70,10 @@ const Navbar = () => {
 
             <Link
               to="/dashboard"
-              className={`px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
+              className={`px-4 py-2 rounded-lg transition-all flex items-center space-x-2 ${
                 isActive('/dashboard')
-                  ? 'text-blue-600 bg-blue-50'
-                  : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
+                  ? 'text-blue-600 bg-blue-50/70 backdrop-blur-sm'
+                  : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50/70'
               }`}
             >
               <svg
@@ -94,10 +94,10 @@ const Navbar = () => {
 
             <Link
               to="/meetings"
-              className={`px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
+              className={`px-4 py-2 rounded-lg transition-all flex items-center space-x-2 ${
                 isActive('/meetings')
-                  ? 'text-blue-600 bg-blue-50'
-                  : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
+                  ? 'text-blue-600 bg-blue-50/70 backdrop-blur-sm'
+                  : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50/70'
               }`}
             >
               <svg
@@ -118,10 +118,10 @@ const Navbar = () => {
 
             <Link
               to="/emails"
-              className={`px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
+              className={`px-4 py-2 rounded-lg transition-all flex items-center space-x-2 ${
                 isActive('/emails')
-                  ? 'text-blue-600 bg-blue-50'
-                  : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
+                  ? 'text-blue-600 bg-blue-50/70 backdrop-blur-sm'
+                  : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50/70'
               }`}
             >
               <svg

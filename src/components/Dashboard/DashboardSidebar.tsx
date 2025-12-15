@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
 import { setActiveSection, setActiveSubSection } from '../../store/slices/dashboardSlice'
 
@@ -8,10 +9,13 @@ interface SidebarItem {
   icon: JSX.Element
   value?: number
   subItems?: SidebarItem[]
+  isLink?: boolean
+  link?: string
 }
 
 const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => void }) => {
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
   const { activeSection, activeSubSection } = useAppSelector((state) => state.dashboard)
   const [expandedSections, setExpandedSections] = useState<string[]>(['kpis', 'meetings'])
 
@@ -43,6 +47,7 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
       ),
       subItems: [
         { id: 'overview', label: 'Overview', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg> },
+        { id: 'leads', label: 'Leads', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>, isLink: true, link: '/leads' },
         { id: 'contacts-touched', label: 'Contacts Touched', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>, value: 142 },
         { id: 'meetings-completed', label: 'Meetings Completed', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>, value: 28 },
         { id: 'emails-drafted', label: 'Emails Drafted', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>, value: 35 },
@@ -72,7 +77,13 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
     },
   ]
 
-  const handleItemClick = (itemId: string, isSubItem: boolean = false) => {
+  const handleItemClick = (itemId: string, isSubItem: boolean = false, item?: SidebarItem) => {
+    // Handle navigation links
+    if (item?.isLink && item.link) {
+      navigate(item.link)
+      return
+    }
+    
     if (isSubItem) {
       dispatch(setActiveSubSection(itemId))
     } else {
@@ -173,7 +184,7 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
                   {item.subItems.map((subItem) => (
                     <button
                       key={subItem.id}
-                      onClick={() => handleItemClick(subItem.id, true)}
+                      onClick={() => handleItemClick(subItem.id, true, subItem)}
                       className={`group w-full px-3 py-2 flex items-center justify-between text-left transition-all rounded-lg ${
                         activeSubSection === subItem.id 
                           ? 'bg-white text-slate-900 shadow-sm' 
