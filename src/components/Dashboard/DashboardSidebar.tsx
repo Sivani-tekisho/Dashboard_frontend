@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
 import { setActiveSection, setActiveSubSection } from '../../store/slices/dashboardSlice'
 
@@ -8,12 +9,15 @@ interface SidebarItem {
   icon: JSX.Element
   value?: number
   subItems?: SidebarItem[]
+  isLink?: boolean
+  linkTo?: string
 }
 
 const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => void }) => {
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
   const { activeSection, activeSubSection } = useAppSelector((state) => state.dashboard)
-  const [expandedSections, setExpandedSections] = useState<string[]>(['kpis', 'followups', 'meetings'])
+  const [expandedSections, setExpandedSections] = useState<string[]>(['kpis', 'meetings'])
 
   const toggleSection = (sectionId: string) => {
     setExpandedSections((prev) =>
@@ -50,30 +54,24 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
       ],
     },
     {
-      id: 'followups',
-      label: 'Follow-ups',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-      subItems: [
-        { id: 'overdue', label: 'Overdue', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>, value: 12 },
-        { id: 'due-today', label: 'Due Today', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>, value: 5 },
-        { id: 'due-this-week', label: 'Due This Week', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>, value: 18 },
-        { id: 'all-followups', label: 'All Follow-ups', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
-      ],
-    },
-    {
       id: 'meetings',
-      label: 'Upcoming Meetings',
+      label: 'Meeting',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
       ),
       subItems: [
-        { id: 'today', label: 'Today', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>, value: 3 },
+        {
+          id: 'followup-meeting',
+          label: 'Follow-up Meeting',
+          icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+          subItems: [
+            { id: 'meeting-overdue', label: 'Overdue', icon: <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>, value: 12 },
+          ],
+        },
+        { id: 'completed-meeting', label: 'Completed Meeting', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+        { id: 'upcoming-meeting', label: 'Upcoming Meeting', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>, value: 3 },
       ],
     },
   ]
@@ -167,35 +165,114 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
             {item.subItems && expandedSections.includes(item.id) && (
               <div className="bg-gray-50">
                 {item.subItems.map((subItem) => (
-                  <button
-                    key={subItem.id}
-                    onClick={() => handleItemClick(subItem.id, true)}
-                    className={`group w-full px-4 py-2 pl-12 flex items-center justify-between text-left transition-all duration-200 ${
-                      activeSubSection === subItem.id 
-                        ? 'bg-brand-lavender border-r-4 border-brand-primary text-gray-900' 
-                        : 'text-gray-800 bg-white hover:bg-brand-dark hover:text-white'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <span className={`transition-colors ${
-                        activeSubSection === subItem.id 
-                          ? 'text-brand-primary' 
-                          : 'text-gray-600 group-hover:text-white'
-                      }`}>{subItem.icon}</span>
-                      <span className={`transition-colors text-sm ${
-                        activeSubSection === subItem.id 
-                          ? 'text-gray-900 font-semibold' 
-                          : 'text-gray-800 group-hover:text-white'
-                      }`}>{subItem.label}</span>
-                    </div>
-                    {subItem.value !== undefined && (
-                      <span className={`font-semibold text-sm transition-colors ${
-                        activeSubSection === subItem.id 
-                          ? 'text-gray-900' 
-                          : 'text-gray-800 group-hover:text-white'
-                      }`}>{subItem.value}</span>
+                  <div key={subItem.id}>
+                    {/* Check if subItem has nested subItems */}
+                    {subItem.subItems ? (
+                      <>
+                        <button
+                          onClick={() => {
+                            const isExpanded = expandedSections.includes(subItem.id)
+                            toggleSection(subItem.id)
+                          }}
+                          className={`group w-full px-4 py-2 pl-12 flex items-center justify-between text-left transition-all duration-200 ${
+                            'text-gray-800 bg-white hover:bg-brand-dark hover:text-white'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-2">
+                            <span className="text-gray-600 group-hover:text-white">{subItem.icon}</span>
+                            <span className="text-sm text-gray-800 group-hover:text-white font-medium">{subItem.label}</span>
+                          </div>
+                          <svg
+                            className={`w-3 h-3 transition-all text-gray-500 group-hover:text-white ${
+                              expandedSections.includes(subItem.id) ? 'rotate-90' : ''
+                            }`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                        {/* Nested Sub Items */}
+                        {subItem.subItems && expandedSections.includes(subItem.id) && (
+                          <div className="bg-gray-100">
+                            {subItem.subItems.map((nestedItem) => (
+                              <button
+                                key={nestedItem.id}
+                                onClick={() => {
+                                  if (nestedItem.isLink && nestedItem.linkTo) {
+                                    navigate(nestedItem.linkTo)
+                                  } else {
+                                    handleItemClick(nestedItem.id, true)
+                                  }
+                                }}
+                                className={`group w-full px-4 py-2 pl-16 flex items-center justify-between text-left transition-all duration-200 ${
+                                  activeSubSection === nestedItem.id 
+                                    ? 'bg-brand-lavender border-r-4 border-brand-primary text-gray-900' 
+                                    : 'text-gray-800 bg-white hover:bg-brand-dark hover:text-white'
+                                }`}
+                              >
+                                <div className="flex items-center space-x-2">
+                                  <span className={`transition-colors ${
+                                    activeSubSection === nestedItem.id 
+                                      ? 'text-brand-primary' 
+                                      : 'text-gray-600 group-hover:text-white'
+                                  }`}>{nestedItem.icon}</span>
+                                  <span className={`transition-colors text-sm ${
+                                    activeSubSection === nestedItem.id 
+                                      ? 'text-gray-900 font-semibold' 
+                                      : 'text-gray-800 group-hover:text-white'
+                                  }`}>{nestedItem.label}</span>
+                                </div>
+                                {nestedItem.value !== undefined && (
+                                  <span className={`font-semibold text-sm transition-colors ${
+                                    activeSubSection === nestedItem.id 
+                                      ? 'text-gray-900' 
+                                      : 'text-gray-800 group-hover:text-white'
+                                  }`}>{nestedItem.value}</span>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          if (subItem.isLink && subItem.linkTo) {
+                            navigate(subItem.linkTo)
+                          } else {
+                            handleItemClick(subItem.id, true)
+                          }
+                        }}
+                        className={`group w-full px-4 py-2 pl-12 flex items-center justify-between text-left transition-all duration-200 ${
+                          activeSubSection === subItem.id 
+                            ? 'bg-brand-lavender border-r-4 border-brand-primary text-gray-900' 
+                            : 'text-gray-800 bg-white hover:bg-brand-dark hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-2">
+                          <span className={`transition-colors ${
+                            activeSubSection === subItem.id 
+                              ? 'text-brand-primary' 
+                              : 'text-gray-600 group-hover:text-white'
+                          }`}>{subItem.icon}</span>
+                          <span className={`transition-colors text-sm ${
+                            activeSubSection === subItem.id 
+                              ? 'text-gray-900 font-semibold' 
+                              : 'text-gray-800 group-hover:text-white'
+                          }`}>{subItem.label}</span>
+                        </div>
+                        {subItem.value !== undefined && (
+                          <span className={`font-semibold text-sm transition-colors ${
+                            activeSubSection === subItem.id 
+                              ? 'text-gray-900' 
+                              : 'text-gray-800 group-hover:text-white'
+                          }`}>{subItem.value}</span>
+                        )}
+                      </button>
                     )}
-                  </button>
+                  </div>
                 ))}
               </div>
             )}

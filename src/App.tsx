@@ -3,6 +3,8 @@ import Navbar from './components/Navbar'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import CardScanner from './pages/CardScanner'
+import Meetings from './pages/Meetings'
+import Emails from './pages/Emails'
 
 function App() {
   return (
@@ -12,6 +14,8 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/card-scanner" element={<CardScanner />} />
+        <Route path="/meetings" element={<Meetings />} />
+        <Route path="/emails" element={<Emails />} />
       </Routes>
     </div>
   )
