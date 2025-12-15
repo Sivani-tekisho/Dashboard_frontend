@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
 import { setActiveSection, setActiveSubSection } from '../../store/slices/dashboardSlice'
 
@@ -9,13 +8,10 @@ interface SidebarItem {
   icon: JSX.Element
   value?: number
   subItems?: SidebarItem[]
-  isLink?: boolean
-  linkTo?: string
 }
 
 const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => void }) => {
   const dispatch = useAppDispatch()
-  const navigate = useNavigate()
   const { activeSection, activeSubSection } = useAppSelector((state) => state.dashboard)
   const [expandedSections, setExpandedSections] = useState<string[]>(['kpis', 'meetings'])
 
@@ -91,7 +87,7 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
     return (
       <button
         onClick={onToggle}
-        className="fixed left-0 top-20 bg-white text-gray-800 p-2 rounded-r-lg z-10 shadow-lg border-r border-gray-200"
+        className="fixed left-0 top-20 bg-white text-slate-600 p-2 rounded-r-lg z-10 shadow-md border border-slate-200 hover:bg-slate-50"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -101,16 +97,16 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
   }
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-full shadow-sm">
+    <div className="w-64 bg-slate-50 border-r border-slate-200 flex flex-col h-full">
       {/* Sidebar Header */}
-      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+      <div className="p-5 border-b border-slate-200 flex items-center justify-between bg-white">
         <div className="flex items-center space-x-2">
-          <span className="text-brand-primary font-bold text-lg">LQ</span>
-          <span className="text-gray-800 font-semibold">LeadQ.AI</span>
+          <span className="text-blue-600 font-bold text-xl bg-blue-50 px-2 py-1 rounded">LQ</span>
+          <span className="text-slate-800 font-semibold text-base">LeadQ.AI</span>
         </div>
         <button
           onClick={onToggle}
-          className="text-gray-600 hover:text-gray-800 transition-colors"
+          className="text-slate-400 hover:text-slate-600 transition-colors"
           title="Close sidebar"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,175 +116,209 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
       </div>
 
       {/* Menu Items */}
-      <div className="flex-1 overflow-y-auto py-2">
-        {menuItems.map((item) => (
-          <div key={item.id}>
-            <button
-              onClick={() => handleItemClick(item.id)}
-              className={`group w-full px-4 py-3 flex items-center justify-between text-left transition-all duration-200 ${
-                activeSection === item.id 
-                  ? 'bg-brand-primary text-white' 
-                  : 'text-gray-800 bg-white hover:bg-brand-dark hover:text-white'
-              }`}
-            >
-              <div className="flex items-center space-x-3">
-                <span className={`transition-colors ${
-                  activeSection === item.id 
-                    ? 'text-white' 
-                    : 'text-gray-700 group-hover:text-white'
-                }`}>{item.icon}</span>
-                <span className={`transition-colors ${
-                  activeSection === item.id 
-                    ? 'text-white font-semibold' 
-                    : 'text-gray-800 font-medium group-hover:text-white'
-                }`}>{item.label}</span>
-              </div>
-              {item.subItems && (
-                <svg
-                  className={`w-4 h-4 transition-all ${
-                    activeSection === item.id 
-                      ? 'text-white' 
-                      : 'text-gray-500 group-hover:text-white'
-                  } ${
-                    expandedSections.includes(item.id) ? 'rotate-90' : ''
-                  }`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              )}
-            </button>
+      <div className="flex-1 overflow-y-auto py-4">
+        {/* Dashboard Link */}
+        <div className="px-3 mb-2">
+          <button
+            onClick={() => {
+              dispatch(setActiveSection('dashboard'))
+              dispatch(setActiveSubSection(''))
+            }}
+            className={`w-full px-3 py-2.5 flex items-center space-x-3 text-left transition-all rounded-lg ${
+              activeSection === 'dashboard' || (!activeSection && !activeSubSection)
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
+            }`}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+            <span className="font-medium text-sm">Dashboard</span>
+          </button>
+        </div>
 
-            {/* Sub Items */}
-            {item.subItems && expandedSections.includes(item.id) && (
-              <div className="bg-gray-50">
-                {item.subItems.map((subItem) => (
-                  <div key={subItem.id}>
-                    {/* Check if subItem has nested subItems */}
-                    {subItem.subItems ? (
-                      <>
-                        <button
-                          onClick={() => {
-                            const isExpanded = expandedSections.includes(subItem.id)
-                            toggleSection(subItem.id)
-                          }}
-                          className={`group w-full px-4 py-2 pl-12 flex items-center justify-between text-left transition-all duration-200 ${
-                            'text-gray-800 bg-white hover:bg-brand-dark hover:text-white'
-                          }`}
-                        >
-                          <div className="flex items-center space-x-2">
-                            <span className="text-gray-600 group-hover:text-white">{subItem.icon}</span>
-                            <span className="text-sm text-gray-800 group-hover:text-white font-medium">{subItem.label}</span>
-                          </div>
-                          <svg
-                            className={`w-3 h-3 transition-all text-gray-500 group-hover:text-white ${
-                              expandedSections.includes(subItem.id) ? 'rotate-90' : ''
+        {/* KPIs Section */}
+        <div className="px-3 mb-4">
+          {menuItems.filter(item => item.id === 'kpis').map((item) => (
+            <div key={item.id}>
+              <button
+                onClick={() => handleItemClick(item.id)}
+                className={`group w-full px-3 py-2.5 flex items-center justify-between text-left transition-all rounded-lg ${
+                  activeSection === item.id 
+                    ? 'bg-blue-600 text-white shadow-md' 
+                    : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <span>{item.icon}</span>
+                  <span className="font-medium text-sm">{item.label}</span>
+                </div>
+                {item.subItems && (
+                  <svg
+                    className={`w-4 h-4 transition-all ${
+                      expandedSections.includes(item.id) ? 'rotate-90' : ''
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                )}
+              </button>
+
+              {/* Sub Items */}
+              {item.subItems && expandedSections.includes(item.id) && (
+                <div className="mt-2 ml-3 space-y-1">
+                  {item.subItems.map((subItem) => (
+                    <button
+                      key={subItem.id}
+                      onClick={() => handleItemClick(subItem.id, true)}
+                      className={`group w-full px-3 py-2 flex items-center justify-between text-left transition-all rounded-lg ${
+                        activeSubSection === subItem.id 
+                          ? 'bg-white text-slate-900 shadow-sm' 
+                          : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <span>{subItem.icon}</span>
+                        <span className="text-sm">{subItem.label}</span>
+                      </div>
+                      {subItem.value !== undefined && (
+                        <span className="font-semibold text-sm text-slate-700">{subItem.value}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Meeting Section */}
+        <div className="px-3 mb-4">
+          {menuItems.filter(item => item.id === 'meetings').map((item) => (
+            <div key={item.id}>
+              <button
+                onClick={() => handleItemClick(item.id)}
+                className={`group w-full px-3 py-2.5 flex items-center justify-between text-left transition-all rounded-lg ${
+                  activeSection === item.id 
+                    ? 'bg-white text-slate-900 shadow-sm' 
+                    : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <span>{item.icon}</span>
+                  <span className="font-medium text-sm">{item.label}</span>
+                </div>
+                {item.subItems && (
+                  <svg
+                    className={`w-4 h-4 transition-all ${
+                      expandedSections.includes(item.id) ? 'rotate-90' : ''
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                )}
+              </button>
+
+              {/* Sub Items */}
+              {item.subItems && expandedSections.includes(item.id) && (
+                <div className="mt-2 ml-3 space-y-1">
+                  {item.subItems.map((subItem) => {
+                    // Handle nested sub-items (like Follow-up Meeting -> Overdue)
+                    if (subItem.subItems) {
+                      return (
+                        <div key={subItem.id}>
+                          <button
+                            onClick={() => toggleSection(subItem.id)}
+                            className={`group w-full px-3 py-2 flex items-center justify-between text-left transition-all rounded-lg ${
+                              activeSubSection?.startsWith(subItem.id)
+                                ? 'bg-white text-slate-900 shadow-sm' 
+                                : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
                             }`}
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
                           >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </button>
-                        {/* Nested Sub Items */}
-                        {subItem.subItems && expandedSections.includes(subItem.id) && (
-                          <div className="bg-gray-100">
-                            {subItem.subItems.map((nestedItem) => (
-                              <button
-                                key={nestedItem.id}
-                                onClick={() => {
-                                  if (nestedItem.isLink && nestedItem.linkTo) {
-                                    navigate(nestedItem.linkTo)
-                                  } else {
-                                    handleItemClick(nestedItem.id, true)
-                                  }
-                                }}
-                                className={`group w-full px-4 py-2 pl-16 flex items-center justify-between text-left transition-all duration-200 ${
-                                  activeSubSection === nestedItem.id 
-                                    ? 'bg-brand-lavender border-r-4 border-brand-primary text-gray-900' 
-                                    : 'text-gray-800 bg-white hover:bg-brand-dark hover:text-white'
-                                }`}
-                              >
-                                <div className="flex items-center space-x-2">
-                                  <span className={`transition-colors ${
+                            <div className="flex items-center space-x-2">
+                              <span>{subItem.icon}</span>
+                              <span className="text-sm">{subItem.label}</span>
+                            </div>
+                            <svg
+                              className={`w-3 h-3 transition-all ${
+                                expandedSections.includes(subItem.id) ? 'rotate-90' : ''
+                              }`}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </button>
+                          {expandedSections.includes(subItem.id) && subItem.subItems && (
+                            <div className="ml-3 mt-1 space-y-1">
+                              {subItem.subItems.map((nestedItem) => (
+                                <button
+                                  key={nestedItem.id}
+                                  onClick={() => handleItemClick(nestedItem.id, true)}
+                                  className={`w-full px-3 py-2 flex items-center justify-between text-left transition-all rounded-lg ${
                                     activeSubSection === nestedItem.id 
-                                      ? 'text-brand-primary' 
-                                      : 'text-gray-600 group-hover:text-white'
-                                  }`}>{nestedItem.icon}</span>
-                                  <span className={`transition-colors text-sm ${
-                                    activeSubSection === nestedItem.id 
-                                      ? 'text-gray-900 font-semibold' 
-                                      : 'text-gray-800 group-hover:text-white'
-                                  }`}>{nestedItem.label}</span>
-                                </div>
-                                {nestedItem.value !== undefined && (
-                                  <span className={`font-semibold text-sm transition-colors ${
-                                    activeSubSection === nestedItem.id 
-                                      ? 'text-gray-900' 
-                                      : 'text-gray-800 group-hover:text-white'
-                                  }`}>{nestedItem.value}</span>
-                                )}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </>
-                    ) : (
+                                      ? 'bg-white text-slate-900 shadow-sm' 
+                                      : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
+                                  }`}
+                                >
+                                  <div className="flex items-center space-x-2">
+                                    <span>{nestedItem.icon}</span>
+                                    <span className="text-sm">{nestedItem.label}</span>
+                                  </div>
+                                  {nestedItem.value !== undefined && (
+                                    <span className="font-semibold text-sm text-slate-700">{nestedItem.value}</span>
+                                  )}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    }
+                    // Regular sub-items
+                    return (
                       <button
-                        onClick={() => {
-                          if (subItem.isLink && subItem.linkTo) {
-                            navigate(subItem.linkTo)
-                          } else {
-                            handleItemClick(subItem.id, true)
-                          }
-                        }}
-                        className={`group w-full px-4 py-2 pl-12 flex items-center justify-between text-left transition-all duration-200 ${
+                        key={subItem.id}
+                        onClick={() => handleItemClick(subItem.id, true)}
+                        className={`group w-full px-3 py-2 flex items-center justify-between text-left transition-all rounded-lg ${
                           activeSubSection === subItem.id 
-                            ? 'bg-brand-lavender border-r-4 border-brand-primary text-gray-900' 
-                            : 'text-gray-800 bg-white hover:bg-brand-dark hover:text-white'
+                            ? 'bg-white text-slate-900 shadow-sm' 
+                            : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
                         }`}
                       >
                         <div className="flex items-center space-x-2">
-                          <span className={`transition-colors ${
-                            activeSubSection === subItem.id 
-                              ? 'text-brand-primary' 
-                              : 'text-gray-600 group-hover:text-white'
-                          }`}>{subItem.icon}</span>
-                          <span className={`transition-colors text-sm ${
-                            activeSubSection === subItem.id 
-                              ? 'text-gray-900 font-semibold' 
-                              : 'text-gray-800 group-hover:text-white'
-                          }`}>{subItem.label}</span>
+                          <span>{subItem.icon}</span>
+                          <span className="text-sm">{subItem.label}</span>
                         </div>
                         {subItem.value !== undefined && (
-                          <span className={`font-semibold text-sm transition-colors ${
-                            activeSubSection === subItem.id 
-                              ? 'text-gray-900' 
-                              : 'text-gray-800 group-hover:text-white'
-                          }`}>{subItem.value}</span>
+                          <span className="font-semibold text-sm text-slate-700">{subItem.value}</span>
                         )}
                       </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* User Profile */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-slate-200 bg-white">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-brand-primary rounded-full flex items-center justify-center">
-            <span className="text-white font-semibold">SK</span>
+          <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+            <span className="text-white font-semibold text-sm">SK</span>
           </div>
           <div className="flex-1">
-            <p className="text-gray-800 font-medium text-sm">Shivani </p>
-            <p className="text-gray-600 text-xs">ShivaniKarnati@gmail.com</p>
+            <p className="text-slate-800 font-medium text-sm">Shivani</p>
+            <p className="text-slate-500 text-xs">ShivaniKarnati@gmail.com</p>
           </div>
         </div>
       </div>
@@ -297,4 +327,3 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
 }
 
 export default DashboardSidebar
-
