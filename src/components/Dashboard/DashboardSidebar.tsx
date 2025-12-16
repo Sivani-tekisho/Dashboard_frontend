@@ -88,7 +88,7 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
     },
   ]
 
-  const handleItemClick = (itemId: string, isSubItem: boolean = false, item?: SidebarItem) => {
+  const handleItemClick = (itemId: string, isSubItem: boolean = false, item?: SidebarItem, parentId?: string) => {
     // Handle navigation links
     if (item?.isLink && item.link) {
       navigate(item.link)
@@ -96,6 +96,10 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
     }
 
     if (isSubItem) {
+      // Set both the sub-section and the parent section
+      if (parentId) {
+        dispatch(setActiveSection(parentId))
+      }
       dispatch(setActiveSubSection(itemId))
     } else {
       dispatch(setActiveSection(itemId))
@@ -123,8 +127,7 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
       {/* Sidebar Header */}
       <div className="p-5 border-b border-slate-200 flex items-center justify-between bg-white">
         <div className="flex items-center space-x-2">
-          <span className="text-blue-600 font-bold text-xl bg-blue-50 px-2 py-1 rounded">LQ</span>
-          <span className="text-slate-800 font-semibold text-base">LeadQ.AI</span>
+          <span className="text-slate-800 font-semibold text-lg">Dashboard</span>
         </div>
         <button
           onClick={onToggle}
@@ -139,25 +142,6 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
 
       {/* Menu Items */}
       <div className="flex-1 overflow-y-auto py-4">
-        {/* Dashboard Link */}
-        <div className="px-3 mb-2">
-          <button
-            onClick={() => {
-              dispatch(setActiveSection('dashboard'))
-              dispatch(setActiveSubSection(''))
-            }}
-            className={`w-full px-3 py-2.5 flex items-center space-x-3 text-left transition-all rounded-lg ${activeSection === 'dashboard' || (!activeSection && !activeSubSection)
-                ? 'bg-white text-slate-900 shadow-sm'
-                : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
-              }`}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-            </svg>
-            <span className="font-medium text-sm">Dashboard</span>
-          </button>
-        </div>
-
         {/* KPIs Section */}
         <div className="px-3 mb-4">
           {menuItems.filter(item => item.id === 'kpis').map((item) => (
@@ -192,7 +176,7 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
                   {item.subItems.map((subItem) => (
                     <button
                       key={subItem.id}
-                      onClick={() => handleItemClick(subItem.id, true, subItem)}
+                      onClick={() => handleItemClick(subItem.id, true, subItem, item.id)}
                       className={`group w-full px-3 py-2 flex items-center justify-between text-left transition-all rounded-lg ${activeSubSection === subItem.id
                           ? 'bg-white text-slate-900 shadow-sm'
                           : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
@@ -275,7 +259,7 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
                               {subItem.subItems.map((nestedItem) => (
                                 <button
                                   key={nestedItem.id}
-                                  onClick={() => handleItemClick(nestedItem.id, true)}
+                                  onClick={() => handleItemClick(nestedItem.id, true, nestedItem, item.id)}
                                   className={`w-full px-3 py-2 flex items-center justify-between text-left transition-all rounded-lg ${activeSubSection === nestedItem.id
                                       ? 'bg-white text-slate-900 shadow-sm'
                                       : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
@@ -299,7 +283,7 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
                     return (
                       <button
                         key={subItem.id}
-                        onClick={() => handleItemClick(subItem.id, true)}
+                        onClick={() => handleItemClick(subItem.id, true, subItem, item.id)}
                         className={`group w-full px-3 py-2 flex items-center justify-between text-left transition-all rounded-lg ${activeSubSection === subItem.id
                             ? 'bg-white text-slate-900 shadow-sm'
                             : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'

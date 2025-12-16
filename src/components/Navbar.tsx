@@ -11,10 +11,11 @@ const Navbar = () => {
     <nav className="bg-white/80 backdrop-blur-md border-b border-slate-200/50 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-center justify-between h-16">
-          {/* Logo - hidden as shown in screenshot */}
+          {/* Logo */}
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              {/* Logo removed to match screenshot */}
+              <span className="text-blue-600 font-bold text-xl bg-blue-50 px-2 py-1 rounded">LQ</span>
+              <span className="text-slate-800 font-semibold text-lg">LeadQ.AI</span>
             </div>
           </div>
 
@@ -22,121 +23,56 @@ const Navbar = () => {
           <div className="flex items-center space-x-1">
             <Link
               to="/"
-              className={`px-4 py-2 rounded-lg transition-all flex items-center space-x-2 ${
+              className={`px-4 py-2 rounded-lg transition-all ${
                 isActive('/')
                   ? 'text-blue-600 bg-blue-50/70 backdrop-blur-sm'
                   : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50/70'
               }`}
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                />
-              </svg>
               <span className="font-medium">Home</span>
             </Link>
 
             <Link
               to="/card-scanner"
-              className={`px-4 py-2 rounded-lg transition-all flex items-center space-x-2 ${
+              className={`px-4 py-2 rounded-lg transition-all ${
                 isActive('/card-scanner')
                   ? 'text-blue-600 bg-blue-50/70 backdrop-blur-sm'
                   : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50/70'
               }`}
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
               <span className="font-medium">Card Scanner</span>
             </Link>
 
             <Link
               to="/dashboard"
-              className={`px-4 py-2 rounded-lg transition-all flex items-center space-x-2 ${
+              className={`px-4 py-2 rounded-lg transition-all ${
                 isActive('/dashboard')
                   ? 'text-blue-600 bg-blue-50/70 backdrop-blur-sm'
                   : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50/70'
               }`}
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                />
-              </svg>
               <span className="font-medium">Dashboard</span>
             </Link>
 
             <Link
               to="/meetings"
-              className={`px-4 py-2 rounded-lg transition-all flex items-center space-x-2 ${
+              className={`px-4 py-2 rounded-lg transition-all ${
                 isActive('/meetings')
                   ? 'text-blue-600 bg-blue-50/70 backdrop-blur-sm'
                   : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50/70'
               }`}
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
               <span className="font-medium">Meetings</span>
             </Link>
 
             <Link
               to="/emails"
-              className={`px-4 py-2 rounded-lg transition-all flex items-center space-x-2 ${
+              className={`px-4 py-2 rounded-lg transition-all ${
                 isActive('/emails')
                   ? 'text-blue-600 bg-blue-50/70 backdrop-blur-sm'
                   : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50/70'
               }`}
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                />
-              </svg>
               <span className="font-medium">Emails</span>
             </Link>
           </div>
@@ -196,4 +132,3 @@ const Navbar = () => {
 }
 
 export default Navbar
-

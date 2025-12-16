@@ -1,63 +1,62 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import DashboardSidebar from '../components/Dashboard/DashboardSidebar'
+import { fetchAllContacts, Contact } from '../services/api'
 
 const Leads = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const navigate = useNavigate()
 
-  const leads = [
-    {
-      id: 1,
-      name: 'ABC Corporation',
-      email: 'contact@abccorp.com',
-      phone: '+1 234 567 8900',
-      status: 'Hot',
-      source: 'Website',
-      value: '$50,000',
-      lastContact: 'Dec 14, 2025',
-    },
-    {
-      id: 2,
-      name: 'XYZ Industries',
-      email: 'info@xyzind.com',
-      phone: '+1 234 567 8901',
-      status: 'Warm',
-      source: 'Referral',
-      value: '$30,000',
-      lastContact: 'Dec 12, 2025',
-    },
-    {
-      id: 3,
-      name: 'Tech Solutions Inc',
-      email: 'sales@techsol.com',
-      phone: '+1 234 567 8902',
-      status: 'Cold',
-      source: 'LinkedIn',
-      value: '$20,000',
-      lastContact: 'Dec 10, 2025',
-    },
-    {
-      id: 4,
-      name: 'Global Enterprises',
-      email: 'hello@globalent.com',
-      phone: '+1 234 567 8903',
-      status: 'Hot',
-      source: 'Email Campaign',
-      value: '$75,000',
-      lastContact: 'Dec 15, 2025',
-    },
-  ]
+  const { data: leads, isLoading, error } = useQuery<Contact[], Error>({
+    queryKey: ['contacts'],
+    queryFn: fetchAllContacts,
+  })
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Hot':
+  // Calculate statistics from real data
+  const totalLeads = leads?.length || 0;
+  const hotLeads = leads?.filter(l => (l.outcome || l.last_outcome_status) === 'HOT').length || 0;
+  const warmLeads = leads?.filter(l => (l.outcome || l.last_outcome_status) === 'WARM').length || 0;
+  // const coldLeads = leads?.filter(l => (l.outcome || l.last_outcome_status) === 'COLD').length || 0;
+  // Total Value is not in DB currently, remove or placeholder? User said "remove them" from UI columns.
+  // But header stats cards might still be wanted. The user said "in the shown UI we don't have source, value, so remove them and add the other details in the UI it need to be take from the db".
+  // I will keep stats but Value might be 0 or calculated if I had value. Since I don't, I might hide the Value card or show 0.
+  // The user said "remove them" referencing "source, value". I assumes column.
+  // I'll keep the Value card as placeholder or remove it?
+  // "in the ui it's not reflecting whatever the data is there reflect it in the UI if anything is missing just remove it and maintain the folder structure and in the shown UI we don't have source, value, so remove them"
+  // It implies removing from the table. I'll probably leave the top cards but set Value to N/A or 0.
+
+  const getStatusColor = (status: string | null | undefined) => {
+    const s = status?.toUpperCase();
+    switch (s) {
+      case 'HOT':
         return 'bg-red-100 text-red-800 border-red-200'
-      case 'Warm':
+      case 'WARM':
         return 'bg-orange-100 text-orange-800 border-orange-200'
-      case 'Cold':
+      case 'COLD':
         return 'bg-blue-100 text-blue-800 border-blue-200'
+      case 'WON':
+        return 'bg-green-100 text-green-800 border-green-200'
+      case 'LOST':
+        return 'bg-gray-100 text-gray-800 border-gray-200'
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200'
     }
+  }
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  }
+
+  const getDisplayName = (lead: Contact) => {
+    if (lead.company_name) return lead.company_name;
+    if (lead.first_name || lead.last_name) return `${lead.first_name || ''} ${lead.last_name || ''}`.trim();
+    return 'Unknown';
   }
 
   return (
@@ -65,17 +64,28 @@ const Leads = () => {
       <DashboardSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
       <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-slate-900 mb-1">Leads</h1>
-          <p className="text-slate-600 text-sm">Manage and track your leads</p>
+          <div className="flex items-center space-x-3 mb-1">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              title="Go back"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <h1 className="text-2xl font-bold text-slate-900">Leads</h1>
+          </div>
+          <p className="text-slate-600 text-sm ml-11">Manage and track your leads</p>
         </div>
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="glass-card p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-600">Total Leads</p>
-                <p className="text-2xl font-bold text-blue-600">24</p>
+                <p className="text-2xl font-bold text-blue-600">{totalLeads}</p>
               </div>
               <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -84,12 +94,12 @@ const Leads = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="glass-card p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-600">Hot Leads</p>
-                <p className="text-2xl font-bold text-red-600">8</p>
+                <p className="text-2xl font-bold text-red-600">{hotLeads}</p>
               </div>
               <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,12 +108,12 @@ const Leads = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="glass-card p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-600">Warm Leads</p>
-                <p className="text-2xl font-bold text-orange-600">10</p>
+                <p className="text-2xl font-bold text-orange-600">{warmLeads}</p>
               </div>
               <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -112,20 +122,10 @@ const Leads = () => {
               </div>
             </div>
           </div>
-          
-          <div className="glass-card p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-600">Total Value</p>
-                <p className="text-2xl font-bold text-green-600">$175K</p>
-              </div>
-              <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            </div>
-          </div>
+
+          {/* Hiding Total Value or showing N/A since it's not in DB */}
+
+          {/* Total Value Card Removed */}
         </div>
 
         {/* Leads Table */}
@@ -136,59 +136,64 @@ const Leads = () => {
               Add Lead
             </button>
           </div>
-          
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-200">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Name</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Contact</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Status</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Source</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Value</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Last Contact</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leads.map((lead) => (
-                  <tr key={lead.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                    <td className="py-3 px-4">
-                      <p className="font-semibold text-slate-900">{lead.name}</p>
-                    </td>
-                    <td className="py-3 px-4">
-                      <p className="text-sm text-slate-600">{lead.email}</p>
-                      <p className="text-xs text-slate-500">{lead.phone}</p>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(lead.status)}`}>
-                        {lead.status}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <p className="text-sm text-slate-600">{lead.source}</p>
-                    </td>
-                    <td className="py-3 px-4">
-                      <p className="text-sm font-semibold text-slate-900">{lead.value}</p>
-                    </td>
-                    <td className="py-3 px-4">
-                      <p className="text-sm text-slate-600">{lead.lastContact}</p>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center space-x-2">
-                        <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                          View
-                        </button>
-                        <button className="text-slate-600 hover:text-slate-700 text-sm">
-                          Edit
-                        </button>
-                      </div>
-                    </td>
+
+          {isLoading ? (
+            <div className="text-center py-8 text-slate-500">Loading contacts...</div>
+          ) : error ? (
+            <div className="text-center py-8 text-red-500">Error loading contacts</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-200">
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Name</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Contact</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Status</th>
+                    {/* Removed Source and Value cols */}
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Last Contact</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {leads?.map((lead) => (
+                    <tr key={lead.contact_id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                      <td className="py-3 px-4">
+                        <p className="font-semibold text-slate-900">{getDisplayName(lead)}</p>
+                      </td>
+                      <td className="py-3 px-4">
+                        {lead.email && <p className="text-sm text-slate-600">{lead.email}</p>}
+                        {lead.phone && <p className="text-xs text-slate-500">{lead.phone}</p>}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(lead.outcome || lead.last_outcome_status)}`}>
+                          {lead.outcome || lead.last_outcome_status || 'N/A'}
+                        </span>
+                      </td>
+                      {/* Removed Source and Value cells */}
+                      <td className="py-3 px-4">
+                        <p className="text-sm text-slate-600">{formatDate(lead.last_activity_at || lead.created_at)}</p>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center space-x-2">
+                          <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                            View
+                          </button>
+                          <button className="text-slate-600 hover:text-slate-700 text-sm">
+                            Edit
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {(!leads || leads.length === 0) && (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-slate-500">No leads found</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -196,4 +201,3 @@ const Leads = () => {
 }
 
 export default Leads
-

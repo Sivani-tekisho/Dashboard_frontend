@@ -5,7 +5,7 @@ export const queryClient = new QueryClient();
 
 export const API_BASE_URL = 'http://localhost:8000';
 // Hardcoded user ID for demo purposes content
-export const DEFAULT_USER_ID = 'a70d751a-94d3-4a4f-9356-b15c8146804a';
+export const DEFAULT_USER_ID = '676b4801-993d-43d3-ae97-0082dfd82948';
 
 export enum DateRangePreset {
     TODAY = "TODAY",
@@ -22,6 +22,7 @@ export interface FunnelBreakdown {
     meetings_completed: number;
     emails_drafted: number;
     emails_sent: number;
+    qualified_contacts: number;
     positive_outcomes: number;
 }
 
@@ -32,6 +33,11 @@ export interface DashboardSummary {
     overdue_followups_count: number;
     cancelled_count: number;
     no_show_count: number;
+    conversion_rate: number;
+    conversion_rate_change: number;
+    total_leads: number;
+    qualified_leads: number;
+    converted_leads: number;
     funnel_breakdown: FunnelBreakdown;
 }
 
@@ -46,6 +52,8 @@ export interface Contact {
     next_follow_up_due_at: string | null;
     next_follow_up_type: string | null;
     last_outcome_status: string | null;
+    outcome?: string | null;
+    phone?: string | null;
 }
 
 export interface CompletedMeeting {
@@ -55,6 +63,7 @@ export interface CompletedMeeting {
     scheduled_at: string | null;
     status: string | null;
     mom_exists: boolean | null;
+    mom_text?: string | null;
 }
 
 export interface EmailDetail {
@@ -65,10 +74,26 @@ export interface EmailDetail {
     recipient: string | null;
 }
 
+export interface Meeting {
+    meeting_id: string;
+    contact_id: string | null;
+    scheduled_at: string | null;
+    status: string | null;
+    mom_exists: boolean | null;
+    duration_seconds: number | null;
+}
+
+export interface Email {
+    email_id: string;
+    status: string | null;
+    drafted_at: string | null;
+    prompt_version: string | null;
+}
+
 export interface SearchResult {
     contacts: Contact[];
-    // meetings: Meeting[];
-    // emails: Email[];
+    meetings: Meeting[];
+    emails: Email[];
 }
 
 export const fetchDashboardSummary = async (preset: DateRangePreset = DateRangePreset.THIS_MONTH): Promise<DashboardSummary> => {
@@ -109,6 +134,17 @@ export const fetchContacts = async (query: string = ''): Promise<SearchResult> =
     return response.json();
 }
 
+export const fetchAllContacts = async (): Promise<Contact[]> => {
+    const params = new URLSearchParams({
+        user_id: DEFAULT_USER_ID
+    });
+    const response = await fetch(`${API_BASE_URL}/api/v1/contacts?${params.toString()}`);
+    if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+}
+
 export const fetchCompletedMeetings = async (): Promise<CompletedMeeting[]> => {
     const params = new URLSearchParams({
         user_id: DEFAULT_USER_ID
@@ -129,4 +165,16 @@ export const fetchDraftedEmails = async (): Promise<EmailDetail[]> => {
         throw new Error(`API Error: ${response.status} ${response.statusText}`);
     }
     return response.json();
+}
+
+export interface SearchItem {
+    id: string;
+    type: 'contact' | 'meeting' | 'email' | 'lead';
+    title: string;
+    subtitle?: string;
+}
+
+export interface GlobalSearchResponse {
+    results: SearchItem[];
+    total: number;
 }

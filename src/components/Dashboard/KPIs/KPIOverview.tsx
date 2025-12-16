@@ -22,12 +22,7 @@ const KPIOverview = () => {
   const kpiCards = useMemo(() => {
     if (!summaryData) return []
 
-    // Calculate conversion rate safely
-    const contactsCaptured = summaryData.funnel_breakdown.contacts_captured || 0
-    const positiveOutcomes = summaryData.funnel_breakdown.positive_outcomes || 0
-    const conversionRateVal = contactsCaptured > 0
-      ? Math.round((positiveOutcomes / contactsCaptured) * 100)
-      : 0
+
 
     return [
       {
@@ -85,8 +80,9 @@ const KPIOverview = () => {
       {
         id: 'conversion-rate',
         title: 'Conversion Rate',
-        value: `${conversionRateVal}%`,
-        // change: '+3% from last month',
+        value: `${summaryData.conversion_rate}%`,
+        change: `${summaryData.conversion_rate_change > 0 ? '+' : ''}${summaryData.conversion_rate_change}% from last month`,
+        changeType: summaryData.conversion_rate_change >= 0 ? 'positive' : 'negative',
         icon: (
           <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
             <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,7 +94,7 @@ const KPIOverview = () => {
       {
         id: 'leads',
         title: 'Leads',
-        value: summaryData.funnel_breakdown.positive_outcomes.toString(),
+        value: summaryData.contacts_touched.toString(),
         additionalInfo: `${summaryData.overdue_followups_count} require follow-up`,
         icon: (
           <div className="w-12 h-12 bg-brand-primary/20 rounded-lg flex items-center justify-center backdrop-blur-sm">

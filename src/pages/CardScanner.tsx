@@ -1,10 +1,25 @@
+import { useNavigate } from 'react-router-dom'
+
 const CardScanner = () => {
+  const navigate = useNavigate()
+
   return (
     <div className="min-h-screen p-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Card Scanner</h1>
-          <p className="text-gray-600">Scan and extract information from business cards</p>
+          <div className="flex items-center space-x-3 mb-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              title="Go back"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <h1 className="text-3xl font-bold text-gray-800">Card Scanner</h1>
+          </div>
+          <p className="text-gray-600 ml-11">Scan and extract information from business cards</p>
         </div>
 
         <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm">
@@ -38,4 +53,3 @@ const CardScanner = () => {
 }
 
 export default CardScanner
-

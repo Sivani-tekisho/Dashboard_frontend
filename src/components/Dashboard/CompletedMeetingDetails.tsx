@@ -1,60 +1,58 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { fetchCompletedMeetings, CompletedMeeting } from '../../services/api'
 
-interface CompletedMeetingDetailsProps {
-  summaries: string[]
-}
+const CompletedMeetingDetails = () => {
+  const [expandedMeetings, setExpandedMeetings] = useState<string[]>([])
 
-const CompletedMeetingDetails = ({ summaries }: CompletedMeetingDetailsProps) => {
-  const [expandedMeetings, setExpandedMeetings] = useState<number[]>([])
+  const { data: meetings, isLoading, error } = useQuery<CompletedMeeting[], Error>({
+    queryKey: ['completedMeetings'],
+    queryFn: fetchCompletedMeetings,
+  })
 
-  const meetings = [
-    {
-      id: 1,
-      title: 'Product Demo - Tech Solutions Inc',
-      date: 'Dec 14, 2025 at 2:00 PM',
-      attendeesCount: 3,
-      summary: summaries[0],
-      actionItems: [
-        'Send detailed proposal by Dec 18',
-        'Schedule technical Q&A session',
-        'Provide additional case studies'
-      ]
-    },
-    {
-      id: 2,
-      title: 'Onboarding Session',
-      date: 'Dec 13, 2025 at 11:00 AM',
-      attendeesCount: 2,
-      summary: summaries[1],
-      actionItems: [
-        'Follow-up training session scheduled',
-        'Send welcome email with resources'
-      ]
-    },
-    {
-      id: 3,
-      title: 'Quarterly Business Review',
-      date: 'Dec 12, 2025 at 3:00 PM',
-      attendeesCount: 3,
-      summary: summaries[2],
-      actionItems: [
-        'Send case studies and references',
-        'Schedule next check-in for mid-January'
-      ]
-    }
-  ]
-
-  const toggleMeeting = (id: number) => {
+  const toggleMeeting = (id: string) => {
     setExpandedMeetings(prev =>
       prev.includes(id) ? prev.filter(mId => mId !== id) : [...prev, id]
+    )
+  }
+
+  const meetingList = useMemo(() => {
+    if (!meetings) return []
+    return meetings.map((m) => ({
+      ...m,
+      title: m.company_name ? `${m.contact_name} - ${m.company_name}` : m.contact_name || 'Meeting',
+      date: m.scheduled_at ? new Date(m.scheduled_at).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric'
+      }) : 'N/A',
+      summary: m.mom_text || (m.mom_exists ? 'Meeting minutes available.' : 'No summary available.'),
+    }))
+  }, [meetings])
+
+  if (isLoading) {
+    return <div className="p-8 text-center text-slate-500">Loading completed meetings...</div>
+  }
+
+  if (error) {
+    return <div className="p-8 text-center text-red-500">Error loading meetings</div>
+  }
+
+  if (!meetingList.length) {
+    return (
+      <div className="p-8 text-center text-slate-500">
+        <p>No completed meetings found.</p>
+      </div>
     )
   }
 
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold text-slate-900 mb-4">Completed Meetings</h2>
-      {meetings.map((meeting) => (
-        <div key={meeting.id} className="glass-card p-5">
+      {meetingList.map((meeting) => (
+        <div key={meeting.meeting_id} className="glass-card p-5">
           <div className="flex items-start justify-between mb-3">
             <div className="flex-1">
               <div className="flex items-center space-x-2 mb-2">
@@ -67,12 +65,12 @@ const CompletedMeetingDetails = ({ summaries }: CompletedMeetingDetailsProps) =>
               <p className="font-semibold text-slate-900 text-lg">{meeting.title}</p>
             </div>
             <button
-              onClick={() => toggleMeeting(meeting.id)}
+              onClick={() => toggleMeeting(meeting.meeting_id)}
               className="flex items-center space-x-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
             >
-              <span>{expandedMeetings.includes(meeting.id) ? 'Hide' : 'Show'} Details</span>
+              <span>{expandedMeetings.includes(meeting.meeting_id) ? 'Hide' : 'Show'} Details</span>
               <svg
-                className={`w-4 h-4 transition-transform ${expandedMeetings.includes(meeting.id) ? 'rotate-180' : ''}`}
+                className={`w-4 h-4 transition-transform ${expandedMeetings.includes(meeting.meeting_id) ? 'rotate-180' : ''}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -82,7 +80,7 @@ const CompletedMeetingDetails = ({ summaries }: CompletedMeetingDetailsProps) =>
             </button>
           </div>
 
-          {expandedMeetings.includes(meeting.id) && (
+          {expandedMeetings.includes(meeting.meeting_id) && (
             <div className="mt-4 pt-4 border-t border-slate-200 space-y-4 animate-in slide-in-from-top-2 duration-200">
               <div>
                 <p className="text-sm font-medium text-slate-700 mb-2">Meeting Summary / MOM:</p>
@@ -90,18 +88,13 @@ const CompletedMeetingDetails = ({ summaries }: CompletedMeetingDetailsProps) =>
                   {meeting.summary}
                 </p>
               </div>
+              {/* Removed hardcoded attendees and action items for now as back-end doesn't provide them yet */}
+              {/* 
               <div>
                 <p className="text-sm font-medium text-slate-700 mb-2">Meeting Details:</p>
                 <p className="text-sm text-slate-600">Attendees: {meeting.attendeesCount} people</p>
               </div>
-              <div>
-                <p className="text-sm font-medium text-slate-700 mb-2">Action Items:</p>
-                <ul className="list-disc list-inside space-y-1 text-sm text-slate-600">
-                  {meeting.actionItems.map((item, idx) => (
-                    <li key={idx}>{item}</li>
-                  ))}
-                </ul>
-              </div>
+              */}
             </div>
           )}
         </div>
@@ -111,4 +104,3 @@ const CompletedMeetingDetails = ({ summaries }: CompletedMeetingDetailsProps) =>
 }
 
 export default CompletedMeetingDetails
-
