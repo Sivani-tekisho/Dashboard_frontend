@@ -12,7 +12,7 @@ const EmailsDrafted = () => {
   const pendingEmails = emails?.filter(e => e.status !== 'SENT').length || 0
 
   if (isLoading) return <div className="p-10 text-center">Loading emails...</div>
-  if (error) return <div className="p-10 text-red-500">Error: {error.message}</div>
+  if (error) return <div className="p-10 text-blue-500">Error: {error.message}</div>
 
   return (
     <div className="space-y-6">

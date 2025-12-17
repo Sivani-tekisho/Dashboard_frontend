@@ -18,7 +18,7 @@ const ContactsTouched = () => {
   }
 
   if (error) {
-    return <div className="p-10 text-red-500">Error loading contacts: {error.message}</div>
+    return <div className="p-10 text-blue-500">Error loading contacts: {error.message}</div>
   }
 
   return (

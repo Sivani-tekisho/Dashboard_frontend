@@ -46,10 +46,10 @@ const Emails = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-600">Pending Send</p>
-                <p className="text-2xl font-bold text-yellow-600">5</p>
+                <p className="text-2xl font-bold text-blue-600">5</p>
               </div>
-              <div className="w-12 h-12 bg-yellow-50 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
@@ -60,10 +60,10 @@ const Emails = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-600">Sent</p>
-                <p className="text-2xl font-bold text-green-600">30</p>
+                <p className="text-2xl font-bold text-blue-600">30</p>
               </div>
-              <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
@@ -74,10 +74,10 @@ const Emails = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-600">Opened</p>
-                <p className="text-2xl font-bold text-purple-600">24</p>
+                <p className="text-2xl font-bold text-blue-600">24</p>
               </div>
-              <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
@@ -104,7 +104,7 @@ const Emails = () => {
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-2">
                     <span className="font-semibold text-slate-900">Proposal Follow-up</span>
-                    <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">Pending</span>
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">Pending</span>
                   </div>
                   <p className="text-sm text-slate-600 mb-1">To: john.doe@example.com</p>
                   <p className="text-sm text-slate-500">Subject: Q4 Strategy Discussion - Next Steps</p>
@@ -112,7 +112,7 @@ const Emails = () => {
                 </div>
                 <div className="flex items-center space-x-2">
                   <button className="text-blue-600 hover:text-blue-700 text-sm">Edit</button>
-                  <button className="text-green-600 hover:text-green-700 text-sm">Send</button>
+                  <button className="text-blue-600 hover:text-blue-700 text-sm">Send</button>
                 </div>
               </div>
             </div>
@@ -122,7 +122,7 @@ const Emails = () => {
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-2">
                     <span className="font-semibold text-slate-900">Meeting Confirmation</span>
-                    <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">Pending</span>
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">Pending</span>
                   </div>
                   <p className="text-sm text-slate-600 mb-1">To: sarah.wilson@example.com</p>
                   <p className="text-sm text-slate-500">Subject: Confirming Our Meeting Next Week</p>
@@ -130,7 +130,7 @@ const Emails = () => {
                 </div>
                 <div className="flex items-center space-x-2">
                   <button className="text-blue-600 hover:text-blue-700 text-sm">Edit</button>
-                  <button className="text-green-600 hover:text-green-700 text-sm">Send</button>
+                  <button className="text-blue-600 hover:text-blue-700 text-sm">Send</button>
                 </div>
               </div>
             </div>
@@ -140,7 +140,7 @@ const Emails = () => {
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-2">
                     <span className="font-semibold text-slate-900">Thank You Note</span>
-                    <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">Sent</span>
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">Sent</span>
                   </div>
                   <p className="text-sm text-slate-600 mb-1">To: michael.brown@example.com</p>
                   <p className="text-sm text-slate-500">Subject: Thank You for Your Time Today</p>
@@ -157,7 +157,7 @@ const Emails = () => {
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-2">
                     <span className="font-semibold text-slate-900">Project Update</span>
-                    <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">Pending</span>
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">Pending</span>
                   </div>
                   <p className="text-sm text-slate-600 mb-1">To: team@example.com</p>
                   <p className="text-sm text-slate-500">Subject: Weekly Project Status Update</p>
@@ -165,7 +165,7 @@ const Emails = () => {
                 </div>
                 <div className="flex items-center space-x-2">
                   <button className="text-blue-600 hover:text-blue-700 text-sm">Edit</button>
-                  <button className="text-green-600 hover:text-green-700 text-sm">Send</button>
+                  <button className="text-blue-600 hover:text-blue-700 text-sm">Send</button>
                 </div>
               </div>
             </div>

@@ -30,13 +30,13 @@ const Leads = () => {
     const s = status?.toUpperCase();
     switch (s) {
       case 'HOT':
-        return 'bg-red-100 text-red-800 border-red-200'
+        return 'bg-blue-100 text-blue-800 border-blue-200'
       case 'WARM':
-        return 'bg-orange-100 text-orange-800 border-orange-200'
+        return 'bg-blue-100 text-blue-800 border-blue-200'
       case 'COLD':
         return 'bg-blue-100 text-blue-800 border-blue-200'
       case 'WON':
-        return 'bg-green-100 text-green-800 border-green-200'
+        return 'bg-blue-100 text-blue-800 border-blue-200'
       case 'LOST':
         return 'bg-gray-100 text-gray-800 border-gray-200'
       default:
@@ -99,10 +99,10 @@ const Leads = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-600">Hot Leads</p>
-                <p className="text-2xl font-bold text-red-600">{hotLeads}</p>
+                <p className="text-2xl font-bold text-blue-600">{hotLeads}</p>
               </div>
-              <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
@@ -113,10 +113,10 @@ const Leads = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-600">Warm Leads</p>
-                <p className="text-2xl font-bold text-orange-600">{warmLeads}</p>
+                <p className="text-2xl font-bold text-blue-600">{warmLeads}</p>
               </div>
-              <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
@@ -140,7 +140,7 @@ const Leads = () => {
           {isLoading ? (
             <div className="text-center py-8 text-slate-500">Loading contacts...</div>
           ) : error ? (
-            <div className="text-center py-8 text-red-500">Error loading contacts</div>
+            <div className="text-center py-8 text-blue-500">Error loading contacts</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">

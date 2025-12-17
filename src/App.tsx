@@ -6,6 +6,7 @@ import CardScanner from './pages/CardScanner'
 import Meetings from './pages/Meetings'
 import Emails from './pages/Emails'
 import Leads from './pages/Leads'
+import VoiceAgent from './pages/VoiceAgent'
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path="/meetings" element={<Meetings />} />
         <Route path="/emails" element={<Emails />} />
         <Route path="/leads" element={<Leads />} />
+        <Route path="/voice-agent" element={<VoiceAgent />} />
       </Routes>
     </div>
   )

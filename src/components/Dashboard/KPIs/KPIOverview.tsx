@@ -131,8 +131,8 @@ const KPIOverview = () => {
           <h1 className="text-2xl font-bold text-gray-800 mb-1">KPIs Overview</h1>
           <p className="text-gray-600 text-sm">Track your key performance indicators</p>
         </div>
-        <div className="bg-white rounded-lg p-6 border border-red-200">
-          <p className="text-red-600 font-medium mb-2">Error loading data</p>
+        <div className="bg-white rounded-lg p-6 border border-blue-200">
+          <p className="text-blue-600 font-medium mb-2">Error loading data</p>
           <p className="text-gray-500 text-sm">{(error as Error).message}</p>
           <div className="mt-4">
             {/* Fallback info or retry button could go here */}
@@ -153,7 +153,7 @@ const KPIOverview = () => {
       {/* Quick Actions Section */}
       <div>
         <h2 className="text-xl font-bold text-slate-800 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Card Scanner */}
           <button
             onClick={() => navigate('/card-scanner')}
@@ -201,6 +201,23 @@ const KPIOverview = () => {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-slate-800">Email</h3>
+              </div>
+            </div>
+          </button>
+
+          {/* Voice Agent */}
+          <button
+            onClick={() => navigate('/voice-agent')}
+            className="bg-blue-50/70 backdrop-blur-sm rounded-2xl p-5 hover:shadow-lg hover:scale-105 transition-all text-left"
+          >
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">Voice Agent</h3>
               </div>
             </div>
           </button>
