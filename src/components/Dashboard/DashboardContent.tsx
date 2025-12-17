@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppSelector, useAppDispatch } from '../../store/hooks'
 import { setActiveSection, setActiveSubSection } from '../../store/slices/dashboardSlice'
+import SearchBar from '../SearchBar'
 import KPIOverview from './KPIs/KPIOverview'
 import ContactsTouched from './KPIs/ContactsTouched'
 import MeetingsCompleted from './KPIs/MeetingsCompleted'
@@ -9,13 +10,11 @@ import EmailsDrafted from './KPIs/EmailsDrafted'
 import ConversionRate from './KPIs/ConversionRate'
 import CompletedMeetingDetails from './CompletedMeetingDetails'
 
+
 const DashboardContent = () => {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const { activeSection, activeSubSection } = useAppSelector((state) => state.dashboard)
-  
-  // Debug logging
-  console.log('DashboardContent - activeSection:', activeSection, 'activeSubSection:', activeSubSection)
   
   // Get username from localStorage or use default
   const userName = useMemo(() => {
@@ -60,19 +59,19 @@ const DashboardContent = () => {
             <div className="glass-card p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-slate-900">Overdue Follow-ups</h2>
-                <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div className="space-y-4">
                 <div 
                   onClick={() => navigate('/meetings')}
-                  className="border-l-4 border-red-500 pl-4 py-4 cursor-pointer hover:bg-red-50/50 rounded-r-lg transition-colors"
+                  className="border-l-4 border-blue-500 pl-4 py-4 cursor-pointer hover:bg-blue-50/50 rounded-r-lg transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <p className="font-semibold text-slate-900 text-base mb-1">Q4 Strategy Review Meeting</p>
-                      <p className="text-sm text-red-600 mb-1">Overdue by 2 days</p>
+                      <p className="text-sm text-blue-600 mb-1">Overdue by 2 days</p>
                       <p className="text-xs text-slate-500">Scheduled for: Dec 12, 2025 at 2:00 PM</p>
                     </div>
                     <button 
@@ -89,12 +88,12 @@ const DashboardContent = () => {
                 
                 <div 
                   onClick={() => navigate('/meetings')}
-                  className="border-l-4 border-red-500 pl-4 py-4 cursor-pointer hover:bg-red-50/50 rounded-r-lg transition-colors"
+                  className="border-l-4 border-blue-500 pl-4 py-4 cursor-pointer hover:bg-blue-50/50 rounded-r-lg transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <p className="font-semibold text-slate-900 text-base mb-1">Client Check-in Meeting</p>
-                      <p className="text-sm text-red-600 mb-1">Overdue by 1 day</p>
+                      <p className="text-sm text-blue-600 mb-1">Overdue by 1 day</p>
                       <p className="text-xs text-slate-500">Scheduled for: Dec 13, 2025 at 10:00 AM</p>
                     </div>
                     <button 
@@ -111,7 +110,7 @@ const DashboardContent = () => {
                 
                 <div 
                   onClick={() => navigate('/meetings')}
-                  className="border-l-4 border-red-500 pl-4 py-4 cursor-pointer hover:bg-red-50/50 rounded-r-lg transition-colors"
+                  className="border-l-4 border-blue-500 pl-4 py-4 cursor-pointer hover:bg-blue-50/50 rounded-r-lg transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
@@ -153,10 +152,10 @@ const DashboardContent = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-slate-600">Completed</p>
-                    <p className="text-2xl font-bold text-green-600">22</p>
+                    <p className="text-2xl font-bold text-blue-600">22</p>
                   </div>
-                  <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center">
-                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
@@ -167,10 +166,10 @@ const DashboardContent = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-slate-600">Upcoming</p>
-                    <p className="text-2xl font-bold text-purple-600">3</p>
+                    <p className="text-2xl font-bold text-blue-600">3</p>
                   </div>
-                  <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center">
-                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
@@ -181,10 +180,10 @@ const DashboardContent = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-slate-600">Overdue</p>
-                    <p className="text-2xl font-bold text-red-600">3</p>
+                    <p className="text-2xl font-bold text-blue-600">3</p>
                   </div>
-                  <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center">
-                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                   </div>
@@ -292,16 +291,7 @@ const DashboardContent = () => {
 
           {/* Search and Filter */}
           <div className="flex items-center space-x-3">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search contacts or companies..."
-                className="bg-white/60 backdrop-blur-md border border-slate-200/50 rounded-lg pl-10 pr-4 py-2 text-slate-700 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100/50 text-sm w-64"
-              />
-              <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
+            <SearchBar />
             <select className="bg-white/60 backdrop-blur-md border border-slate-200/50 rounded-lg px-4 py-2 text-slate-700 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100/50 text-sm">
               <option>This Month</option>
               <option>This Week</option>

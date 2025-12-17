@@ -1,9 +1,29 @@
+import { useAppDispatch } from '../../../store/hooks'
+import { setActiveSubSection } from '../../../store/slices/dashboardSlice'
+
 const ConversionRate = () => {
+  const dispatch = useAppDispatch()
+
+  const handleBack = () => {
+    dispatch(setActiveSubSection('overview'))
+  }
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-4xl font-bold text-slate-800 mb-2">Conversion Rate</h1>
-        <p className="text-slate-600">Analyze your conversion metrics and trends</p>
+        <div className="flex items-center space-x-3 mb-2">
+          <button
+            onClick={handleBack}
+            className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            title="Go back"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <h1 className="text-4xl font-bold text-slate-800">Conversion Rate</h1>
+        </div>
+        <p className="text-slate-600 ml-11">Analyze your conversion metrics and trends</p>
       </div>
 
       <div className="bg-white rounded-xl p-6 shadow-lg border border-slate-200">

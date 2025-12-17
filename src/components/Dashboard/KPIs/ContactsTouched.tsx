@@ -1,8 +1,12 @@
 import { fetchContacts, type SearchResult } from '../../../services/api'
 import { useQuery } from '@tanstack/react-query'
 import { formatDistanceToNow } from 'date-fns'
+import { useAppDispatch } from '../../../store/hooks'
+import { setActiveSubSection } from '../../../store/slices/dashboardSlice'
 
 const ContactsTouched = () => {
+  const dispatch = useAppDispatch()
+  
   // Use useQuery to fetch contacts. 
   // We're fetching all contacts (conceptually "touched") by not providing a specific query or relying on default behavior if API supports it.
   // Ideally, "Contacts Touched" implies contacts with interactions. The Search API might return all contacts for now.
@@ -12,6 +16,10 @@ const ContactsTouched = () => {
   })
 
   const contacts = searchResult?.contacts || []
+
+  const handleBack = () => {
+    dispatch(setActiveSubSection('overview'))
+  }
 
   if (isLoading) {
     return <div className="p-10 flex justify-center"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div></div>
@@ -24,8 +32,19 @@ const ContactsTouched = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-4xl font-bold text-slate-800 mb-2">Contacts Touched</h1>
-        <p className="text-slate-600">View and manage all contacts you've interacted with</p>
+        <div className="flex items-center space-x-3 mb-2">
+          <button
+            onClick={handleBack}
+            className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            title="Go back"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <h1 className="text-4xl font-bold text-slate-800">Contacts Touched</h1>
+        </div>
+        <p className="text-slate-600 ml-11">View and manage all contacts you've interacted with</p>
       </div>
 
       <div className="bg-white rounded-xl p-6 shadow-lg border border-slate-200">

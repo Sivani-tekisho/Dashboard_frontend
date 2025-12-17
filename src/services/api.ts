@@ -5,7 +5,7 @@ export const queryClient = new QueryClient();
 
 export const API_BASE_URL = 'http://localhost:8000';
 // Hardcoded user ID for demo purposes content
-export const DEFAULT_USER_ID = 'a70d751a-94d3-4a4f-9356-b15c8146804a';
+export const DEFAULT_USER_ID = '701a9770-b847-4ed5-a8fa-b8bb0b7981ea';
 
 export enum DateRangePreset {
     TODAY = "TODAY",
@@ -71,6 +71,18 @@ export interface SearchResult {
     // emails: Email[];
 }
 
+export interface SearchItem {
+    id: string;
+    type: 'contact' | 'meeting' | 'email' | 'lead';
+    title: string;
+    subtitle?: string;
+}
+
+export interface GlobalSearchResponse {
+    results: SearchItem[];
+    total: number;
+}
+
 export const fetchDashboardSummary = async (preset: DateRangePreset = DateRangePreset.THIS_MONTH): Promise<DashboardSummary> => {
     const params = new URLSearchParams({
         user_id: DEFAULT_USER_ID,
@@ -129,5 +141,48 @@ export const fetchDraftedEmails = async (): Promise<EmailDetail[]> => {
         throw new Error(`API Error: ${response.status} ${response.statusText}`);
     }
     return response.json();
+}
+
+export const searchGlobal = async (query: string, userId: string = DEFAULT_USER_ID): Promise<GlobalSearchResponse> => {
+    if (!query || query.length < 1) {
+        return { results: [], total: 0 };
+    }
+
+    const params = new URLSearchParams({
+        user_id: userId,
+        query: query
+    });
+
+    const response = await fetch(`${API_BASE_URL}/api/v1/search?${params.toString()}`);
+    
+    if (!response.ok) {
+        throw new Error(`Search API Error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    // Transform the backend response to match SearchItem format
+    const results: SearchItem[] = [];
+    
+    // Add contacts to results
+    if (data.contacts && Array.isArray(data.contacts)) {
+        data.contacts.forEach((contact: Contact) => {
+            results.push({
+                id: contact.contact_id,
+                type: 'contact',
+                title: `${contact.first_name || ''} ${contact.last_name || ''}`.trim() || 'Unknown',
+                subtitle: contact.company_name || contact.email || undefined
+            });
+        });
+    }
+
+    // You can add meetings and emails here when backend supports them
+    // if (data.meetings && Array.isArray(data.meetings)) { ... }
+    // if (data.emails && Array.isArray(data.emails)) { ... }
+
+    return {
+        results,
+        total: results.length
+    };
 }
 1

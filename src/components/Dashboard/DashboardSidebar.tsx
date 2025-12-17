@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
 import { setActiveSection, setActiveSubSection } from '../../store/slices/dashboardSlice'
 
@@ -19,6 +19,7 @@ interface SidebarItem {
 const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => void }) => {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
+  const location = useLocation()
   const { activeSection, activeSubSection } = useAppSelector((state) => state.dashboard)
   const [expandedSections, setExpandedSections] = useState<string[]>(['kpis', 'meetings'])
 
@@ -101,10 +102,18 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
         dispatch(setActiveSection(parentId))
       }
       dispatch(setActiveSubSection(itemId))
+      // Navigate to dashboard if not already there
+      if (location.pathname !== '/dashboard') {
+        navigate('/dashboard')
+      }
     } else {
       dispatch(setActiveSection(itemId))
       if (menuItems.find((item) => item.id === itemId)?.subItems) {
         toggleSection(itemId)
+      }
+      // Navigate to dashboard if not already there
+      if (location.pathname !== '/dashboard') {
+        navigate('/dashboard')
       }
     }
   }
