@@ -152,5 +152,216 @@ body {
                 0 4px 12px 0 rgba(37, 99, 235, 0.2);
     transform: translateY(-2px);
   }
+
+  /* Button Styles */
+  .btn-primary {
+    @apply bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium;
+  }
+
+  .btn-secondary {
+    @apply bg-blue-50 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors font-medium;
+  }
+
+  .btn-outline {
+    @apply border-2 border-blue-600 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors font-medium;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-sm;
+  }
+
+  .btn-lg {
+    @apply px-6 py-3 text-lg;
+  }
+
+  /* Card Styles */
+  .card {
+    @apply bg-white border border-slate-200 rounded-2xl p-6 shadow-sm transition-all;
+  }
+
+  .card-hover {
+    @apply card hover:shadow-lg hover:border-blue-300 cursor-pointer;
+  }
+
+  .card-blue {
+    @apply bg-white border border-blue-200 rounded-lg p-6;
+  }
+
+  /* Status Badge Styles */
+  .badge {
+    @apply px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center;
+  }
+
+  .badge-blue {
+    @apply badge bg-blue-100 text-blue-700 border border-blue-300;
+  }
+
+  .badge-outline {
+    @apply badge bg-white border-2;
+  }
+
+  /* Border Accent Styles */
+  .border-accent {
+    @apply border-l-4 border-blue-500 pl-4 py-2;
+  }
+
+  .border-accent-hover {
+    @apply border-accent hover:bg-blue-50/50 rounded-r-lg transition-colors cursor-pointer;
+  }
+
+  /* Input Styles */
+  .input {
+    @apply bg-white/60 backdrop-blur-md border border-slate-200/50 rounded-lg px-4 py-2 text-slate-700 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100/50;
+  }
+
+  .input-search {
+    @apply input pl-10;
+  }
+
+  /* Table Styles */
+  .table-container {
+    @apply overflow-x-auto rounded-lg border border-slate-200;
+  }
+
+  .table {
+    @apply min-w-full divide-y divide-slate-200;
+  }
+
+  .table-header {
+    @apply px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider bg-slate-50/50;
+  }
+
+  .table-cell {
+    @apply px-6 py-4 text-sm text-slate-900;
+  }
+
+  .table-row {
+    @apply border-b border-slate-100 hover:bg-slate-50/30 transition-colors;
+  }
+
+  /* Icon Container Styles */
+  .icon-container {
+    @apply w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center;
+  }
+
+  .icon-container-sm {
+    @apply w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center;
+  }
+
+  .icon-blue {
+    @apply text-blue-600;
+  }
+
+  /* Loading Spinner */
+  .spinner {
+    @apply animate-spin rounded-full border-b-2 border-blue-500;
+  }
+
+  .spinner-sm {
+    @apply spinner h-4 w-4;
+  }
+
+  .spinner-md {
+    @apply spinner h-8 w-8;
+  }
+
+  .spinner-lg {
+    @apply spinner h-12 w-12;
+  }
+
+  /* Grid Layouts */
+  .stats-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6;
+  }
+
+  .cards-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+  }
+
+  .cards-grid-3 {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+  }
+
+  /* Text Styles */
+  .heading {
+    @apply text-2xl font-bold text-slate-900;
+  }
+
+  .subheading {
+    @apply text-lg font-semibold text-slate-900;
+  }
+
+  .text-muted {
+    @apply text-slate-500 text-sm;
+  }
+
+  .text-label {
+    @apply text-xs font-semibold text-slate-500 uppercase tracking-wide;
+  }
+
+  /* Divider Styles */
+  .divider {
+    @apply border-b border-slate-200;
+  }
+
+  .divider-blue {
+    @apply border-b border-blue-100;
+  }
+
+  /* Section Styles */
+  .section {
+    @apply space-y-6;
+  }
+
+  .section-header {
+    @apply flex items-center justify-between mb-6;
+  }
+
+  /* Animation Classes */
+  .fade-in {
+    animation: fadeIn 0.3s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .slide-in {
+    animation: slideIn 0.4s ease-out;
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Focus Visible Styles */
+  .focus-visible {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2;
+  }
+
+  /* Shadow Utilities */
+  .shadow-blue {
+    box-shadow: 0 4px 16px 0 rgba(37, 99, 235, 0.08),
+                0 2px 8px 0 rgba(37, 99, 235, 0.04);
+  }
+
+  .shadow-blue-lg {
+    box-shadow: 0 8px 24px 0 rgba(37, 99, 235, 0.12),
+                0 4px 12px 0 rgba(37, 99, 235, 0.08);
+  }
 }
 

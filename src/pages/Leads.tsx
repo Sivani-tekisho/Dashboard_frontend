@@ -6,12 +6,17 @@ import { fetchAllContacts, Contact } from '../services/api'
 
 const Leads = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [expandedLead, setExpandedLead] = useState<string | null>(null)
   const navigate = useNavigate()
 
   const { data: leads, isLoading, error } = useQuery<Contact[], Error>({
     queryKey: ['contacts'],
     queryFn: fetchAllContacts,
   })
+
+  const toggleLeadSummary = (contactId: string) => {
+    setExpandedLead(expandedLead === contactId ? null : contactId)
+  }
 
   // Calculate statistics from real data
   const totalLeads = leads?.length || 0;
@@ -53,10 +58,62 @@ const Leads = () => {
     });
   }
 
+  const formatDateTime = (dateString: string | null) => {
+    if (!dateString) return 'N/A'
+    const date = new Date(dateString)
+    return date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+
   const getDisplayName = (lead: Contact) => {
     if (lead.company_name) return lead.company_name;
     if (lead.first_name || lead.last_name) return `${lead.first_name || ''} ${lead.last_name || ''}`.trim();
     return 'Unknown';
+  }
+
+  type MockMeeting = {
+    id: string
+    scheduled_at: string | null
+    status: string
+    summary: string
+  }
+
+  const getMockMeetingsForLead = (lead: Contact): MockMeeting[] => {
+    const status = (lead.outcome || lead.last_outcome_status || '').toUpperCase()
+
+    let count = 1
+    if (status === 'HOT') {
+      count = 3
+    } else if (status === 'WARM') {
+      count = 2
+    } else {
+      count = 1
+    }
+
+    const baseDate = lead.last_activity_at || lead.created_at || new Date().toISOString()
+    const base = new Date(baseDate)
+
+    const templates = [
+      'Discussed requirements and current challenges. Clarified use cases and expectations. Agreed to share a detailed proposal. Identified key decision makers.',
+      'Reviewed product demo and main features. Addressed initial questions and objections. Talked about pricing and contract terms. Planned follow-up for technical review.',
+      'Deep dive on integrations and workflows. Confirmed timelines and implementation approach. Captured feedback from stakeholders. Next step is internal approval on their side.',
+    ]
+
+    return Array.from({ length: count }).map((_, idx) => {
+      const d = new Date(base)
+      d.setDate(d.getDate() - idx * 2)
+      return {
+        id: `${lead.contact_id}-mock-${idx}`,
+        scheduled_at: d.toISOString(),
+        status: idx === 0 ? 'Completed' : 'Completed',
+        summary: templates[idx % templates.length],
+      }
+    })
   }
 
   return (
@@ -155,36 +212,107 @@ const Leads = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {leads?.map((lead) => (
-                    <tr key={lead.contact_id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                      <td className="py-3 px-4">
-                        <p className="font-semibold text-slate-900">{getDisplayName(lead)}</p>
-                      </td>
-                      <td className="py-3 px-4">
-                        {lead.email && <p className="text-sm text-slate-600">{lead.email}</p>}
-                        {lead.phone && <p className="text-xs text-slate-500">{lead.phone}</p>}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(lead.outcome || lead.last_outcome_status)}`}>
-                          {lead.outcome || lead.last_outcome_status || 'N/A'}
-                        </span>
-                      </td>
-                      {/* Removed Source and Value cells */}
-                      <td className="py-3 px-4">
-                        <p className="text-sm text-slate-600">{formatDate(lead.last_activity_at || lead.created_at)}</p>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center space-x-2">
-                          <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                            View
-                          </button>
-                          <button className="text-slate-600 hover:text-slate-700 text-sm">
-                            Edit
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {leads?.map((lead) => {
+                    const leadMeetings = getMockMeetingsForLead(lead)
+                    return (
+                      <>
+                        <tr key={lead.contact_id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                        <td className="py-3 px-4">
+                          <p className="font-semibold text-slate-900">{getDisplayName(lead)}</p>
+                        </td>
+                        <td className="py-3 px-4">
+                          {lead.email && <p className="text-sm text-slate-600">{lead.email}</p>}
+                          {lead.phone && <p className="text-xs text-slate-500">{lead.phone}</p>}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(lead.outcome || lead.last_outcome_status)}`}>
+                            {lead.outcome || lead.last_outcome_status || 'N/A'}
+                          </span>
+                        </td>
+                        {/* Removed Source and Value cells */}
+                        <td className="py-3 px-4">
+                          <p className="text-sm text-slate-600">{formatDate(lead.last_activity_at || lead.created_at)}</p>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center space-x-2">
+                            <button 
+                              onClick={() => toggleLeadSummary(lead.contact_id)}
+                              className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center space-x-1"
+                            >
+                              <span>{expandedLead === lead.contact_id ? 'Hide' : 'View'} Summary</span>
+                              <svg 
+                                className={`w-4 h-4 transition-transform ${expandedLead === lead.contact_id ? 'rotate-180' : ''}`}
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
+                            <button className="text-slate-600 hover:text-slate-700 text-sm">
+                              Edit
+                            </button>
+                          </div>
+                        </td>
+                        </tr>
+
+                        {/* Expandable Meetings Summary Section */}
+                        {expandedLead === lead.contact_id && (
+                          <tr key={`${lead.contact_id}-meetings`}>
+                            <td colSpan={5} className="bg-blue-50/30 p-0">
+                              <div className="p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                  <h3 className="text-base font-semibold text-slate-900">
+                                    Meetings ({leadMeetings.length})
+                                  </h3>
+                                  <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(lead.outcome || lead.last_outcome_status)}`}>
+                                    {lead.outcome || lead.last_outcome_status || 'N/A'} Lead
+                                  </span>
+                                </div>
+
+                                <div className="space-y-3 bg-white rounded-lg p-4 border border-blue-100">
+                                  {leadMeetings.length === 0 ? (
+                                    <p className="text-sm text-slate-600">
+                                      No meetings recorded yet for this lead.
+                                    </p>
+                                  ) : (
+                                    leadMeetings.map((meeting) => (
+                                      <div
+                                        key={meeting.id}
+                                        className="pb-3 border-b border-slate-200 last:border-0 last:pb-0"
+                                      >
+                                        <p className="text-xs font-semibold text-slate-500 uppercase mb-1">
+                                          Meeting on {formatDateTime(meeting.scheduled_at)}
+                                        </p>
+                                        <p className="text-sm text-slate-700">
+                                          • Status:{' '}
+                                          <span className="font-medium">
+                                            {meeting.status || 'N/A'}
+                                          </span>
+                                        </p>
+                                        <p className="text-sm text-slate-700">
+                                          • Contact:{' '}
+                                          <span className="font-medium">
+                                            {getDisplayName(lead)}
+                                          </span>
+                                        </p>
+                                        <p className="text-sm text-slate-700">
+                                          • Summary:{' '}
+                                          <span className="font-medium">
+                                            {meeting.summary}
+                                          </span>
+                                        </p>
+                                      </div>
+                                    ))
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    )
+                  })}
                   {(!leads || leads.length === 0) && (
                     <tr>
                       <td colSpan={5} className="py-8 text-center text-slate-500">No leads found</td>
@@ -201,3 +329,4 @@ const Leads = () => {
 }
 
 export default Leads
+
