@@ -2,16 +2,16 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import DashboardSidebar from '../components/Dashboard/DashboardSidebar'
-import { fetchAllContacts, Contact } from '../services/api'
+import { fetchLeads, Lead } from '../services/api'
 
 const Leads = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [expandedLead, setExpandedLead] = useState<string | null>(null)
   const navigate = useNavigate()
 
-  const { data: leads, isLoading, error } = useQuery<Contact[], Error>({
-    queryKey: ['contacts'],
-    queryFn: fetchAllContacts,
+  const { data: leads, isLoading, error } = useQuery<Lead[], Error>({
+    queryKey: ['leads'],
+    queryFn: fetchLeads,
   })
 
   const toggleLeadSummary = (contactId: string) => {
@@ -20,8 +20,8 @@ const Leads = () => {
 
   // Calculate statistics from real data
   const totalLeads = leads?.length || 0;
-  const hotLeads = leads?.filter(l => (l.outcome || l.last_outcome_status) === 'HOT').length || 0;
-  const warmLeads = leads?.filter(l => (l.outcome || l.last_outcome_status) === 'WARM').length || 0;
+  const hotLeads = leads?.filter(l => l.status?.toUpperCase() === 'HOT').length || 0;
+  const warmLeads = leads?.filter(l => l.status?.toUpperCase() === 'WARM').length || 0;
   // const coldLeads = leads?.filter(l => (l.outcome || l.last_outcome_status) === 'COLD').length || 0;
   // Total Value is not in DB currently, remove or placeholder? User said "remove them" from UI columns.
   // But header stats cards might still be wanted. The user said "in the shown UI we don't have source, value, so remove them and add the other details in the UI it need to be take from the db".
@@ -70,51 +70,6 @@ const Leads = () => {
     })
   }
 
-  const getDisplayName = (lead: Contact) => {
-    if (lead.company_name) return lead.company_name;
-    if (lead.first_name || lead.last_name) return `${lead.first_name || ''} ${lead.last_name || ''}`.trim();
-    return 'Unknown';
-  }
-
-  type MockMeeting = {
-    id: string
-    scheduled_at: string | null
-    status: string
-    summary: string
-  }
-
-  const getMockMeetingsForLead = (lead: Contact): MockMeeting[] => {
-    const status = (lead.outcome || lead.last_outcome_status || '').toUpperCase()
-
-    let count = 1
-    if (status === 'HOT') {
-      count = 3
-    } else if (status === 'WARM') {
-      count = 2
-    } else {
-      count = 1
-    }
-
-    const baseDate = lead.last_activity_at || lead.created_at || new Date().toISOString()
-    const base = new Date(baseDate)
-
-    const templates = [
-      'Discussed requirements and current challenges. Clarified use cases and expectations. Agreed to share a detailed proposal. Identified key decision makers.',
-      'Reviewed product demo and main features. Addressed initial questions and objections. Talked about pricing and contract terms. Planned follow-up for technical review.',
-      'Deep dive on integrations and workflows. Confirmed timelines and implementation approach. Captured feedback from stakeholders. Next step is internal approval on their side.',
-    ]
-
-    return Array.from({ length: count }).map((_, idx) => {
-      const d = new Date(base)
-      d.setDate(d.getDate() - idx * 2)
-      return {
-        id: `${lead.contact_id}-mock-${idx}`,
-        scheduled_at: d.toISOString(),
-        status: idx === 0 ? 'Completed' : 'Completed',
-        summary: templates[idx % templates.length],
-      }
-    })
-  }
 
   return (
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
@@ -195,9 +150,9 @@ const Leads = () => {
           </div>
 
           {isLoading ? (
-            <div className="text-center py-8 text-slate-500">Loading contacts...</div>
+            <div className="text-center py-8 text-slate-500">Loading leads...</div>
           ) : error ? (
-            <div className="text-center py-8 text-blue-500">Error loading contacts</div>
+            <div className="text-center py-8 text-blue-500">Error loading leads</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -213,25 +168,22 @@ const Leads = () => {
                 </thead>
                 <tbody>
                   {leads?.map((lead) => {
-                    const leadMeetings = getMockMeetingsForLead(lead)
                     return (
                       <>
                         <tr key={lead.contact_id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                         <td className="py-3 px-4">
-                          <p className="font-semibold text-slate-900">{getDisplayName(lead)}</p>
+                          <p className="font-semibold text-slate-900">{lead.name || 'Unknown'}</p>
                         </td>
                         <td className="py-3 px-4">
-                          {lead.email && <p className="text-sm text-slate-600">{lead.email}</p>}
-                          {lead.phone && <p className="text-xs text-slate-500">{lead.phone}</p>}
+                          {lead.contact && <p className="text-sm text-slate-600">{lead.contact}</p>}
                         </td>
                         <td className="py-3 px-4">
-                          <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(lead.outcome || lead.last_outcome_status)}`}>
-                            {lead.outcome || lead.last_outcome_status || 'N/A'}
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(lead.status)}`}>
+                            {lead.status || 'N/A'}
                           </span>
                         </td>
-                        {/* Removed Source and Value cells */}
                         <td className="py-3 px-4">
-                          <p className="text-sm text-slate-600">{formatDate(lead.last_activity_at || lead.created_at)}</p>
+                          <p className="text-sm text-slate-600">{formatDate(lead.last_contact)}</p>
                         </td>
                         <td className="py-3 px-4">
                           <div className="flex items-center space-x-2">
@@ -263,22 +215,27 @@ const Leads = () => {
                               <div className="p-6">
                                 <div className="flex items-center justify-between mb-4">
                                   <h3 className="text-base font-semibold text-slate-900">
-                                    Meetings ({leadMeetings.length})
+                                    Meetings ({lead.meetings?.length || 0})
                                   </h3>
-                                  <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(lead.outcome || lead.last_outcome_status)}`}>
-                                    {lead.outcome || lead.last_outcome_status || 'N/A'} Lead
-                                  </span>
+                                  <div className="flex items-center space-x-3">
+                                    <span className="text-sm text-slate-600">
+                                      Conversion: <span className="font-semibold">{lead.conversion_rate}%</span>
+                                    </span>
+                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(lead.status)}`}>
+                                      {lead.status || 'N/A'} Lead
+                                    </span>
+                                  </div>
                                 </div>
 
                                 <div className="space-y-3 bg-white rounded-lg p-4 border border-blue-100">
-                                  {leadMeetings.length === 0 ? (
+                                  {!lead.meetings || lead.meetings.length === 0 ? (
                                     <p className="text-sm text-slate-600">
                                       No meetings recorded yet for this lead.
                                     </p>
                                   ) : (
-                                    leadMeetings.map((meeting) => (
+                                    lead.meetings.map((meeting) => (
                                       <div
-                                        key={meeting.id}
+                                        key={meeting.meeting_id}
                                         className="pb-3 border-b border-slate-200 last:border-0 last:pb-0"
                                       >
                                         <p className="text-xs font-semibold text-slate-500 uppercase mb-1">
@@ -291,15 +248,9 @@ const Leads = () => {
                                           </span>
                                         </p>
                                         <p className="text-sm text-slate-700">
-                                          • Contact:{' '}
-                                          <span className="font-medium">
-                                            {getDisplayName(lead)}
-                                          </span>
-                                        </p>
-                                        <p className="text-sm text-slate-700">
                                           • Summary:{' '}
                                           <span className="font-medium">
-                                            {meeting.summary}
+                                            {meeting.summary || 'No meeting notes available.'}
                                           </span>
                                         </p>
                                       </div>

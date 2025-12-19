@@ -200,3 +200,31 @@ export const fetchConversionRates = async (preset: DateRangePreset = DateRangePr
     }
     return response.json();
 };
+
+export interface MeetingSummary {
+    meeting_id: string;
+    scheduled_at: string | null;
+    status: string | null;
+    summary: string | null; // This is mom_text from backend
+}
+
+export interface Lead {
+    contact_id: string;
+    name: string | null;
+    contact: string | null;
+    status: string | null;
+    last_contact: string | null;
+    conversion_rate: number;
+    meetings: MeetingSummary[];
+}
+
+export const fetchLeads = async (): Promise<Lead[]> => {
+    const params = new URLSearchParams({
+        user_id: DEFAULT_USER_ID
+    });
+    const response = await fetch(`${API_BASE_URL}/api/v1/leads?${params.toString()}`);
+    if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+};
