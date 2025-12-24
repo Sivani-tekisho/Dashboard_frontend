@@ -5,7 +5,7 @@ export const queryClient = new QueryClient();
 
 export const API_BASE_URL = 'http://localhost:8000';
 // Hardcoded user ID for demo purposes content
-export const DEFAULT_USER_ID = '676b4801-993d-43d3-ae97-0082dfd82948';
+export const DEFAULT_USER_ID = '6eef729c-b251-401d-aedc-d8ac6855915a';
 
 export enum DateRangePreset {
     TODAY = "TODAY",
@@ -31,6 +31,7 @@ export interface DashboardSummary {
     emails_drafted: number;
     mom_coverage_percent: number;
     overdue_followups_count: number;
+    upcoming_meetings_count: number;
     cancelled_count: number;
     no_show_count: number;
     conversion_rate: number;
@@ -39,6 +40,19 @@ export interface DashboardSummary {
     qualified_leads: number;
     converted_leads: number;
     funnel_breakdown: FunnelBreakdown;
+    user_full_name?: string;
+}
+
+export interface ContactEmail {
+    email: string;
+    type?: string;
+    is_primary: boolean;
+}
+
+export interface ContactPhone {
+    phone_number: string;
+    type?: string;
+    is_primary: boolean;
 }
 
 export interface Contact {
@@ -46,14 +60,17 @@ export interface Contact {
     first_name: string | null;
     last_name: string | null;
     company_name: string | null;
+    designation?: string | null;
     email: string | null;
+    phone?: string | null;
+    emails?: ContactEmail[];
+    phones?: ContactPhone[];
     last_activity_at: string | null;
     created_at: string | null;
     next_follow_up_due_at: string | null;
     next_follow_up_type: string | null;
     last_outcome_status: string | null;
     outcome?: string | null;
-    phone?: string | null;
 }
 
 export interface CompletedMeeting {
@@ -96,7 +113,7 @@ export interface SearchResult {
     emails: Email[];
 }
 
-export const fetchDashboardSummary = async (preset: DateRangePreset = DateRangePreset.THIS_MONTH): Promise<DashboardSummary> => {
+export const fetchDashboardSummary = async (preset: DateRangePreset = DateRangePreset.THIS_YEAR): Promise<DashboardSummary> => {
     const params = new URLSearchParams({
         user_id: DEFAULT_USER_ID,
         preset: preset
@@ -178,3 +195,72 @@ export interface GlobalSearchResponse {
     results: SearchItem[];
     total: number;
 }
+
+export interface ConversionRateResponse {
+    total_leads: number;
+    qualified_leads: number;
+    converted_leads: number;
+    leads_percentage: number;
+    qualified_percentage: number;
+    converted_percentage: number;
+    current_rate: number;
+    rate_change: number;
+}
+
+
+export const fetchConversionRates = async (preset: DateRangePreset = DateRangePreset.THIS_MONTH): Promise<ConversionRateResponse> => {
+    const params = new URLSearchParams({
+        user_id: DEFAULT_USER_ID,
+        preset: preset
+    });
+    const response = await fetch(`${API_BASE_URL}/api/v1/analytics/conversion-rates?${params.toString()}`);
+    if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+};
+
+export interface SaveMoMParams {
+    meeting_id: string;
+    mom_text: string;
+}
+
+export const saveMeetingMoM = async (data: SaveMoMParams): Promise<any> => {
+    const params = new URLSearchParams({
+        user_id: DEFAULT_USER_ID
+    });
+
+    const response = await fetch(`${API_BASE_URL}/api/v1/meetings/mom?${params.toString()}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json();
+};
+
+export interface UpcomingMeeting {
+    meeting_id: string;
+    contact_name: string;
+    scheduled_at: string | null;
+    status: string | null;
+    mom_exists: boolean;
+}
+
+export const fetchUpcomingMeetings = async (limit: number = 20): Promise<UpcomingMeeting[]> => {
+    const params = new URLSearchParams({
+        user_id: DEFAULT_USER_ID,
+        limit: limit.toString()
+    });
+    const response = await fetch(`${API_BASE_URL}/api/v1/meetings/upcoming?${params.toString()}`);
+    if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+};

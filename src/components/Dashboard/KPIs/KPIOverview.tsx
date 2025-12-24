@@ -10,7 +10,7 @@ const KPIOverview = () => {
   const navigate = useNavigate()
 
   // TODO: Add date range selector in UI to control this state
-  const selectedPreset = DateRangePreset.THIS_MONTH
+  const selectedPreset = DateRangePreset.THIS_YEAR
 
   const { data: summaryData, isLoading, error } = useQuery<DashboardSummary, Error>({
     queryKey: ['dashboardSummary', selectedPreset],

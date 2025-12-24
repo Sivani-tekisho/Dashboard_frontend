@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import DashboardSidebar from '../components/Dashboard/DashboardSidebar'
 import { fetchAllContacts, Contact } from '../services/api'
@@ -7,6 +7,20 @@ import { fetchAllContacts, Contact } from '../services/api'
 const Leads = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const [expandedContactId, setExpandedContactId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (location.state?.highlightContactId) {
+      setExpandedContactId(location.state.highlightContactId)
+      // Optional: scroll to element logic could be added here
+    }
+  }, [location.state])
+
+  const toggleExpand = (id: string) => {
+    setExpandedContactId(prev => prev === id ? null : id)
+  }
 
   const { data: leads, isLoading, error } = useQuery<Contact[], Error>({
     queryKey: ['contacts'],
@@ -156,34 +170,104 @@ const Leads = () => {
                 </thead>
                 <tbody>
                   {leads?.map((lead) => (
-                    <tr key={lead.contact_id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                      <td className="py-3 px-4">
-                        <p className="font-semibold text-slate-900">{getDisplayName(lead)}</p>
-                      </td>
-                      <td className="py-3 px-4">
-                        {lead.email && <p className="text-sm text-slate-600">{lead.email}</p>}
-                        {lead.phone && <p className="text-xs text-slate-500">{lead.phone}</p>}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(lead.outcome || lead.last_outcome_status)}`}>
-                          {lead.outcome || lead.last_outcome_status || 'N/A'}
-                        </span>
-                      </td>
-                      {/* Removed Source and Value cells */}
-                      <td className="py-3 px-4">
-                        <p className="text-sm text-slate-600">{formatDate(lead.last_activity_at || lead.created_at)}</p>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center space-x-2">
-                          <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                            View
-                          </button>
-                          <button className="text-slate-600 hover:text-slate-700 text-sm">
-                            Edit
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
+                    <>
+                      <tr
+                        key={lead.contact_id}
+                        className={`border-b border-slate-100 transition-colors cursor-pointer ${expandedContactId === lead.contact_id ? 'bg-blue-50 border-blue-200' : 'hover:bg-slate-50'
+                          }`}
+                        onClick={() => toggleExpand(lead.contact_id)}
+                      >
+                        <td className="py-3 px-4">
+                          <div className="flex items-center">
+                            {expandedContactId === lead.contact_id && (
+                              <div className="w-1 h-8 bg-blue-600 rounded-full mr-2"></div>
+                            )}
+                            <p className="font-semibold text-slate-900">{getDisplayName(lead)}</p>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">
+                          {lead.email && <p className="text-sm text-slate-600">{lead.email}</p>}
+                          {lead.phone && <p className="text-xs text-slate-500">{lead.phone}</p>}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(lead.outcome || lead.last_outcome_status)}`}>
+                            {lead.outcome || lead.last_outcome_status || 'N/A'}
+                          </span>
+                        </td>
+                        {/* Removed Source and Value cells */}
+                        <td className="py-3 px-4">
+                          <p className="text-sm text-slate-600">{formatDate(lead.last_activity_at || lead.created_at)}</p>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center space-x-2">
+                            <button
+                              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                              onClick={(e) => { e.stopPropagation(); toggleExpand(lead.contact_id); }}
+                            >
+                              {expandedContactId === lead.contact_id ? 'Hide' : 'View'}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      {expandedContactId === lead.contact_id && (
+                        <tr className="bg-blue-50/50 animate-in fade-in active-row-detail">
+                          <td colSpan={5} className="py-4 px-6 border-b border-blue-100">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                              <div className="space-y-3">
+                                <h4 className="font-semibold text-slate-800 border-b border-blue-200 pb-1">Professional Details</h4>
+                                <div className="grid grid-cols-[100px_1fr] gap-2">
+                                  <span className="text-slate-500">Designation:</span>
+                                  <span className="font-medium text-slate-700">{lead.designation || 'N/A'}</span>
+
+                                  <span className="text-slate-500">Company:</span>
+                                  <span className="font-medium text-slate-700">{lead.company_name || 'N/A'}</span>
+                                </div>
+                              </div>
+
+                              <div className="space-y-3">
+                                <h4 className="font-semibold text-slate-800 border-b border-blue-200 pb-1">Contact Information</h4>
+
+                                {/* Emails */}
+                                <div className="mb-2">
+                                  <p className="text-slate-500 mb-1">Emails:</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {lead.emails && lead.emails.length > 0 ? (
+                                      lead.emails.map((e, idx) => (
+                                        <span key={idx} className="bg-white border border-blue-100 px-2 py-1 rounded text-slate-700 flex items-center shadow-sm">
+                                          {e.email}
+                                          {e.is_primary && <span className="ml-2 px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">Primary</span>}
+                                          {e.type && <span className="ml-1 text-slate-400 text-xs">({e.type})</span>}
+                                        </span>
+                                      ))
+                                    ) : (
+                                      <span className="text-slate-400 italic">No emails recorded</span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Phones */}
+                                <div>
+                                  <p className="text-slate-500 mb-1">Phones:</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {lead.phones && lead.phones.length > 0 ? (
+                                      lead.phones.map((p, idx) => (
+                                        <span key={idx} className="bg-white border border-green-100 px-2 py-1 rounded text-slate-700 flex items-center shadow-sm">
+                                          {p.phone_number}
+                                          {p.is_primary && <span className="ml-2 px-1.5 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">Primary</span>}
+                                          {p.type && <span className="ml-1 text-slate-400 text-xs">({p.type})</span>}
+                                        </span>
+                                      ))
+                                    ) : (
+                                      <span className="text-slate-400 italic">No phones recorded</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
                   ))}
                   {(!leads || leads.length === 0) && (
                     <tr>

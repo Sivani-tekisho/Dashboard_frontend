@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { useAppSelector, useAppDispatch } from '../../store/hooks'
 import { setActiveSection, setActiveSubSection } from '../../store/slices/dashboardSlice'
-import { fetchContacts, SearchItem } from '../../services/api'
+import { fetchContacts, fetchDashboardSummary, SearchItem, fetchUpcomingMeetings } from '../../services/api'
 import KPIOverview from './KPIs/KPIOverview'
 import ContactsTouched from './KPIs/ContactsTouched'
 import EmailsDrafted from './KPIs/EmailsDrafted'
@@ -23,10 +24,25 @@ const DashboardContent = () => {
   // Debug logging
   console.log('DashboardContent - activeSection:', activeSection, 'activeSubSection:', activeSubSection)
 
-  // Get username from localStorage or use default
-  const userName = useMemo(() => {
-    return localStorage.getItem('userName') || 'Shivani'
-  }, [])
+  // Get username from API
+  const { data: summary } = useQuery({
+    queryKey: ['dashboardSummary'],
+    queryFn: () => fetchDashboardSummary(),
+    refetchInterval: 60000 // Update summary every minute
+  });
+
+  const userName = summary?.user_full_name || localStorage.getItem('userName') || 'Shivani';
+
+  const { data: upcomingMeetingsData } = useQuery({
+    queryKey: ['upcomingMeetings'],
+    queryFn: () => fetchUpcomingMeetings(20),
+    refetchInterval: 60000
+  });
+
+  const now = new Date();
+  // Show ALL scheduled meetings in the Upcoming list, even if technically overdue, so user sees them.
+  const upcomingMeetings = upcomingMeetingsData || [];
+  const overdueMeetings = upcomingMeetingsData?.filter(m => m.scheduled_at && new Date(m.scheduled_at) <= now) || [];
 
   // Memoize currentDate to prevent recalculation on every render
   const currentDate = useMemo(() => {
@@ -57,14 +73,15 @@ const DashboardContent = () => {
               subtitle: c.company_name || undefined
             }))
           }
-          if (data.meetings) {
-            data.meetings.forEach(m => items.push({
-              id: m.meeting_id,
-              type: 'meeting',
-              title: 'Meeting',
-              subtitle: m.scheduled_at ? new Date(m.scheduled_at).toLocaleDateString() : undefined
-            }))
-          }
+          // Filter out meetings, only show contacts as requested
+          // if (data.meetings) {
+          //   data.meetings.forEach(m => items.push({
+          //     id: m.meeting_id,
+          //     type: 'meeting',
+          //     title: 'Meeting',
+          //     subtitle: m.scheduled_at ? new Date(m.scheduled_at).toLocaleDateString() : undefined
+          //   }))
+          // }
 
           setSearchResults(items)
           setShowResults(true)
@@ -104,71 +121,34 @@ const DashboardContent = () => {
                 </svg>
               </div>
               <div className="space-y-4">
-                <div
-                  onClick={() => navigate('/meetings')}
-                  className="border-l-4 border-red-500 pl-4 py-4 cursor-pointer hover:bg-red-50/50 rounded-r-lg transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <p className="font-semibold text-slate-900 text-base mb-1">Q4 Strategy Review Meeting</p>
-                      <p className="text-sm text-red-600 mb-1">Overdue by 2 days</p>
-                      <p className="text-xs text-slate-500">Scheduled for: Dec 12, 2025 at 2:00 PM</p>
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        navigate('/meetings')
-                      }}
-                      className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium ml-4"
+                {overdueMeetings.length === 0 ? (
+                  <p className="text-slate-500 text-sm">No overdue meetings.</p>
+                ) : (
+                  overdueMeetings.map(meeting => (
+                    <div
+                      key={meeting.meeting_id}
+                      onClick={() => navigate('/meetings')}
+                      className="border-l-4 border-red-500 pl-4 py-4 cursor-pointer hover:bg-red-50/50 rounded-r-lg transition-colors"
                     >
-                      Join Meeting
-                    </button>
-                  </div>
-                </div>
-
-                <div
-                  onClick={() => navigate('/meetings')}
-                  className="border-l-4 border-red-500 pl-4 py-4 cursor-pointer hover:bg-red-50/50 rounded-r-lg transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <p className="font-semibold text-slate-900 text-base mb-1">Client Check-in Meeting</p>
-                      <p className="text-sm text-red-600 mb-1">Overdue by 1 day</p>
-                      <p className="text-xs text-slate-500">Scheduled for: Dec 13, 2025 at 10:00 AM</p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <p className="font-semibold text-slate-900 text-base mb-1">{meeting.contact_name} - Follow Up</p>
+                          <p className="text-sm text-red-600 mb-1">Overdue</p>
+                          <p className="text-xs text-slate-500">Scheduled for: {meeting.scheduled_at ? new Date(meeting.scheduled_at).toLocaleString() : 'N/A'}</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            navigate('/meetings')
+                          }}
+                          className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium ml-4"
+                        >
+                          Join Meeting
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        navigate('/meetings')
-                      }}
-                      className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium ml-4"
-                    >
-                      Join Meeting
-                    </button>
-                  </div>
-                </div>
-
-                <div
-                  onClick={() => navigate('/meetings')}
-                  className="border-l-4 border-red-500 pl-4 py-4 cursor-pointer hover:bg-red-50/50 rounded-r-lg transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <p className="font-semibold text-slate-900 text-base mb-1">Project Status Update Meeting</p>
-                      <p className="text-sm text-red-600 mb-1">Overdue by 3 days</p>
-                      <p className="text-xs text-slate-500">Scheduled for: Dec 11, 2025 at 3:00 PM</p>
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        navigate('/meetings')
-                      }}
-                      className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium ml-4"
-                    >
-                      Join Meeting
-                    </button>
-                  </div>
-                </div>
+                  ))
+                )}
               </div>
             </div>
 
@@ -178,7 +158,7 @@ const DashboardContent = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-slate-600">Total Meetings</p>
-                    <p className="text-2xl font-bold text-blue-600">28</p>
+                    <p className="text-2xl font-bold text-blue-600">{(summary?.funnel_breakdown.meetings_scheduled || 0) + (summary?.funnel_breakdown.meetings_completed || 0)}</p>
                   </div>
                   <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
                     <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -192,7 +172,7 @@ const DashboardContent = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-slate-600">Completed</p>
-                    <p className="text-2xl font-bold text-green-600">22</p>
+                    <p className="text-2xl font-bold text-green-600">{summary?.funnel_breakdown.meetings_completed || 0}</p>
                   </div>
                   <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center">
                     <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -206,7 +186,7 @@ const DashboardContent = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-slate-600">Upcoming</p>
-                    <p className="text-2xl font-bold text-purple-600">3</p>
+                    <p className="text-2xl font-bold text-purple-600">{summary?.funnel_breakdown.meetings_scheduled || 0}</p>
                   </div>
                   <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center">
                     <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -220,7 +200,7 @@ const DashboardContent = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-slate-600">Overdue</p>
-                    <p className="text-2xl font-bold text-red-600">3</p>
+                    <p className="text-2xl font-bold text-red-600">{summary?.overdue_followups_count || 0}</p>
                   </div>
                   <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center">
                     <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -240,51 +220,27 @@ const DashboardContent = () => {
           <div className="glass-card p-6">
             <h2 className="text-xl font-semibold text-slate-900 mb-4">Upcoming Meetings</h2>
             <div className="space-y-4">
-              <div className="border-l-4 border-blue-600 pl-4 py-3 bg-blue-50 rounded-r-lg">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="font-semibold text-slate-900">Client Review - Q4 Strategy</p>
-                    <p className="text-sm text-slate-600 mt-1">Today at 2:00 PM</p>
-                    <p className="text-xs text-slate-500 mt-1">Duration: 1 hour • Attendees: 4 people</p>
+              {upcomingMeetings.length === 0 ? (
+                <p className="text-slate-500">No upcoming meetings.</p>
+              ) : (
+                upcomingMeetings.map(meeting => (
+                  <div key={meeting.meeting_id} className="border-l-4 border-blue-600 pl-4 py-3 bg-blue-50 rounded-r-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="font-semibold text-slate-900">{meeting.contact_name}</p>
+                        <p className="text-sm text-slate-600 mt-1">{meeting.scheduled_at ? new Date(meeting.scheduled_at).toLocaleString() : 'Date TBD'}</p>
+                        <p className="text-xs text-slate-500 mt-1">Status: {meeting.status}</p>
+                      </div>
+                      <button
+                        onClick={() => navigate('/meetings')}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm ml-4"
+                      >
+                        Join Meeting
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => navigate('/meetings')}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm ml-4"
-                  >
-                    Join Meeting
-                  </button>
-                </div>
-              </div>
-              <div className="border-l-4 border-blue-600 pl-4 py-3 bg-blue-50 rounded-r-lg">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="font-semibold text-slate-900">Team Standup</p>
-                    <p className="text-sm text-slate-600 mt-1">Tomorrow at 10:00 AM</p>
-                    <p className="text-xs text-slate-500 mt-1">Duration: 30 minutes • Attendees: 6 people</p>
-                  </div>
-                  <button
-                    onClick={() => navigate('/meetings')}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm ml-4"
-                  >
-                    Join Meeting
-                  </button>
-                </div>
-              </div>
-              <div className="border-l-4 border-blue-600 pl-4 py-3 bg-blue-50 rounded-r-lg">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="font-semibold text-slate-900">Sales Pipeline Review</p>
-                    <p className="text-sm text-slate-600 mt-1">Dec 17 at 3:30 PM</p>
-                    <p className="text-xs text-slate-500 mt-1">Duration: 45 minutes • Attendees: 3 people</p>
-                  </div>
-                  <button
-                    onClick={() => navigate('/meetings')}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm ml-4"
-                  >
-                    Join Meeting
-                  </button>
-                </div>
-              </div>
+                ))
+              )}
             </div>
           </div>
         )
@@ -353,11 +309,13 @@ const DashboardContent = () => {
                     <div
                       key={result.id}
                       className="px-4 py-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0"
-                      onClick={() => {
+                      onMouseDown={(e) => {
+                        e.preventDefault(); // Prevent input blur
                         console.log('Clicked result:', result)
-                        // TODO: Navigate to detail view
+                        setSearchTerm('') // Clear search
+                        setShowResults(false) // Hide dropdown
                         if (result.type === 'contact') {
-                          navigate('/leads') // Or specific contact view
+                          navigate('/leads', { state: { highlightContactId: result.id } })
                         } else if (result.type === 'meeting') {
                           navigate('/meetings')
                         }

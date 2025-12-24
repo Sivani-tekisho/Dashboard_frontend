@@ -25,7 +25,7 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
   // Fetch Sidebar Stats
   const { data: summaryData } = useQuery({
     queryKey: ['dashboardSummary', 'SIDEBAR'], // Use a key to share cache potentially, or independent
-    queryFn: () => fetchDashboardSummary(DateRangePreset.THIS_MONTH), // Default to THIS_MONTH for sidebar badges? Or remove preset? 
+    queryFn: () => fetchDashboardSummary(DateRangePreset.THIS_YEAR), // Default to THIS_MONTH for sidebar badges? Or remove preset? 
     // Ideally sidebar represents consistent state. Let's use THIS_MONTH as default context.
     refetchInterval: 60000,
   })
@@ -83,7 +83,7 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
           ],
         },
         { id: 'completed-meeting', label: 'Completed Meeting', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
-        { id: 'upcoming-meeting', label: 'Upcoming Meeting', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>, value: summaryData?.funnel_breakdown.meetings_scheduled },
+        { id: 'upcoming-meeting', label: 'Upcoming Meeting', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>, value: summaryData?.upcoming_meetings_count },
       ],
     },
   ]
@@ -149,8 +149,8 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
               <button
                 onClick={() => handleItemClick(item.id)}
                 className={`group w-full px-3 py-2.5 flex items-center justify-between text-left transition-all rounded-lg ${activeSection === item.id
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
                   }`}
               >
                 <div className="flex items-center space-x-3">
@@ -178,8 +178,8 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
                       key={subItem.id}
                       onClick={() => handleItemClick(subItem.id, true, subItem, item.id)}
                       className={`group w-full px-3 py-2 flex items-center justify-between text-left transition-all rounded-lg ${activeSubSection === subItem.id
-                          ? 'bg-white text-slate-900 shadow-sm'
-                          : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
+                        ? 'bg-white text-slate-900 shadow-sm'
+                        : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
                         }`}
                     >
                       <div className="flex items-center space-x-2">
@@ -204,8 +204,8 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
               <button
                 onClick={() => handleItemClick(item.id)}
                 className={`group w-full px-3 py-2.5 flex items-center justify-between text-left transition-all rounded-lg ${activeSection === item.id
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
                   }`}
               >
                 <div className="flex items-center space-x-3">
@@ -236,8 +236,8 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
                           <button
                             onClick={() => toggleSection(subItem.id)}
                             className={`group w-full px-3 py-2 flex items-center justify-between text-left transition-all rounded-lg ${activeSubSection?.startsWith(subItem.id)
-                                ? 'bg-white text-slate-900 shadow-sm'
-                                : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
+                              ? 'bg-white text-slate-900 shadow-sm'
+                              : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
                               }`}
                           >
                             <div className="flex items-center space-x-2">
@@ -261,8 +261,8 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
                                   key={nestedItem.id}
                                   onClick={() => handleItemClick(nestedItem.id, true, nestedItem, item.id)}
                                   className={`w-full px-3 py-2 flex items-center justify-between text-left transition-all rounded-lg ${activeSubSection === nestedItem.id
-                                      ? 'bg-white text-slate-900 shadow-sm'
-                                      : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
+                                    ? 'bg-white text-slate-900 shadow-sm'
+                                    : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
                                     }`}
                                 >
                                   <div className="flex items-center space-x-2">
@@ -285,8 +285,8 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
                         key={subItem.id}
                         onClick={() => handleItemClick(subItem.id, true, subItem, item.id)}
                         className={`group w-full px-3 py-2 flex items-center justify-between text-left transition-all rounded-lg ${activeSubSection === subItem.id
-                            ? 'bg-white text-slate-900 shadow-sm'
-                            : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
+                          ? 'bg-white text-slate-900 shadow-sm'
+                          : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
                           }`}
                       >
                         <div className="flex items-center space-x-2">

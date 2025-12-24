@@ -1,10 +1,33 @@
 import { useState } from 'react'
 import DashboardSidebar from '../components/Dashboard/DashboardSidebar'
 import { useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { fetchUpcomingMeetings, fetchCompletedMeetings } from '../services/api'
+
 
 const Meetings = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const navigate = useNavigate()
+
+  const { data: upcomingData } = useQuery({
+    queryKey: ['upcomingMeetingsFull'],
+    queryFn: () => fetchUpcomingMeetings(50)
+  })
+
+  const { data: completedData } = useQuery({
+    queryKey: ['completedMeetings'],
+    queryFn: () => fetchCompletedMeetings(50)
+  })
+
+  // Show all scheduled meetings in "Upcoming" list.
+  // We can filter overdue into a separate list if we want, or just show them all in Upcoming.
+  // The user requested that "scheduled things are there it need to shown in this page".
+  // So I'll populate upcomingList with all non-completed scheduled meetings.
+  const upcomingList = upcomingData || []
+  const completedList = completedData || []
+
+  // Overdue logic: if scheduled_at < now
+  const overdueList = upcomingData?.filter(m => m.scheduled_at && new Date(m.scheduled_at) <= new Date()) || []
 
   return (
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
@@ -14,7 +37,13 @@ const Meetings = () => {
           <div>
             <div className="flex items-center space-x-3 mb-1">
               <button
-                onClick={() => navigate(-1)}
+                onClick={() => {
+                  if (window.history.length > 1) {
+                    navigate(-1)
+                  } else {
+                    navigate('/')
+                  }
+                }}
                 className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                 title="Go back"
               >
@@ -26,7 +55,7 @@ const Meetings = () => {
             </div>
             <p className="text-slate-600 text-sm ml-11">Manage your meetings and schedule follow-ups</p>
           </div>
-          <button 
+          <button
             onClick={() => navigate('/meetings')}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm flex items-center space-x-2"
           >
@@ -47,40 +76,26 @@ const Meetings = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
-            
-            <div className="space-y-4">
-              <div className="border-l-4 border-blue-500 pl-4 py-2">
-                <p className="font-semibold text-slate-900">Client Review - Q4 Strategy</p>
-                <p className="text-sm text-slate-600">Today at 2:00 PM</p>
-                <button 
-                  onClick={() => navigate('/meetings')}
-                  className="mt-2 bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition-colors text-sm"
-                >
-                  Join Meeting
-                </button>
-              </div>
-              
-              <div className="border-l-4 border-green-500 pl-4 py-2">
-                <p className="font-semibold text-slate-900">Team Standup</p>
-                <p className="text-sm text-slate-600">Tomorrow at 10:00 AM</p>
-                <button 
-                  onClick={() => navigate('/meetings')}
-                  className="mt-2 bg-green-500 text-white px-4 py-1.5 rounded-lg hover:bg-green-600 transition-colors text-sm"
-                >
-                  Join Meeting
-                </button>
-              </div>
-              
-              <div className="border-l-4 border-purple-500 pl-4 py-2">
-                <p className="font-semibold text-slate-900">Sales Pipeline Review</p>
-                <p className="text-sm text-slate-600">Dec 17 at 3:30 PM</p>
-                <button 
-                  onClick={() => navigate('/meetings')}
-                  className="mt-2 bg-purple-500 text-white px-4 py-1.5 rounded-lg hover:bg-purple-600 transition-colors text-sm"
-                >
-                  Join Meeting
-                </button>
-              </div>
+
+            <div className="space-y-4 max-h-[400px] overflow-y-auto">
+              {upcomingList?.length === 0 ? (
+                <p className="text-slate-500 text-sm">No upcoming meetings scheduled.</p>
+              ) : (
+                upcomingList?.map(m => (
+                  <div key={m.meeting_id} className="border-l-4 border-blue-500 pl-4 py-2">
+                    <p className="font-semibold text-slate-900">{m.contact_name || 'Meeting'}</p>
+                    <p className="text-sm text-slate-600">
+                      {m.scheduled_at ? new Date(m.scheduled_at).toLocaleString() : 'N/A'}
+                    </p>
+                    <button
+                      onClick={() => { }}
+                      className="mt-2 bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                    >
+                      Join Meeting
+                    </button>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -92,19 +107,21 @@ const Meetings = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            
-            <div className="space-y-4">
-              <div className="border-l-4 border-gray-300 pl-4 py-2">
-                <p className="font-semibold text-slate-900">Product Demo</p>
-                <p className="text-sm text-slate-600">Dec 14 at 11:00 AM</p>
-                <p className="text-xs text-slate-500 mt-1">Completed</p>
-              </div>
-              
-              <div className="border-l-4 border-gray-300 pl-4 py-2">
-                <p className="font-semibold text-slate-900">Onboarding Session</p>
-                <p className="text-sm text-slate-600">Dec 13 at 2:00 PM</p>
-                <p className="text-xs text-slate-500 mt-1">Completed</p>
-              </div>
+
+            <div className="space-y-4 max-h-[400px] overflow-y-auto">
+              {completedList?.length === 0 ? (
+                <p className="text-slate-500 text-sm">No completed meetings.</p>
+              ) : (
+                completedList?.map(m => (
+                  <div key={m.meeting_id} className="border-l-4 border-gray-300 pl-4 py-2">
+                    <p className="font-semibold text-slate-900">{m.contact_name || 'Meeting'}</p>
+                    <p className="text-sm text-slate-600">
+                      {m.scheduled_at ? new Date(m.scheduled_at).toLocaleString() : 'N/A'}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">Completed</p>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -116,29 +133,26 @@ const Meetings = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            
-            <div className="space-y-4">
-              <div className="border-l-4 border-red-500 pl-4 py-2">
-                <p className="font-semibold text-slate-900">Follow-up with ABC Corp</p>
-                <p className="text-sm text-red-600">Overdue by 2 days</p>
-                <button 
-                  onClick={() => navigate('/meetings')}
-                  className="mt-2 bg-red-500 text-white px-4 py-1.5 rounded-lg hover:bg-red-600 transition-colors text-sm"
-                >
-                  Schedule Now
-                </button>
-              </div>
-              
-              <div className="border-l-4 border-red-500 pl-4 py-2">
-                <p className="font-semibold text-slate-900">Client Check-in</p>
-                <p className="text-sm text-red-600">Overdue by 1 day</p>
-                <button 
-                  onClick={() => navigate('/meetings')}
-                  className="mt-2 bg-red-500 text-white px-4 py-1.5 rounded-lg hover:bg-red-600 transition-colors text-sm"
-                >
-                  Schedule Now
-                </button>
-              </div>
+
+            <div className="space-y-4 max-h-[400px] overflow-y-auto">
+              {overdueList?.length === 0 ? (
+                <p className="text-slate-500 text-sm">No overdue meetings.</p>
+              ) : (
+                overdueList?.map(m => (
+                  <div key={m.meeting_id} className="border-l-4 border-red-500 pl-4 py-2">
+                    <p className="font-semibold text-slate-900">{m.contact_name || 'Meeting'}</p>
+                    <p className="text-sm text-red-600">
+                      {m.scheduled_at ? `Scheduled: ${new Date(m.scheduled_at).toLocaleDateString()}` : 'Date unknown'}
+                    </p>
+                    <button
+                      onClick={() => navigate('/meetings')}
+                      className="mt-2 bg-red-500 text-white px-4 py-1.5 rounded-lg hover:bg-red-600 transition-colors text-sm"
+                    >
+                      Reschedule
+                    </button>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -149,7 +163,7 @@ const Meetings = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-600">Total Meetings</p>
-                <p className="text-2xl font-bold text-blue-600">28</p>
+                <p className="text-2xl font-bold text-blue-600">{(upcomingList.length + completedList.length)}</p>
               </div>
               <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,12 +172,12 @@ const Meetings = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="glass-card p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-600">Completed</p>
-                <p className="text-2xl font-bold text-green-600">22</p>
+                <p className="text-2xl font-bold text-green-600">{completedList.length}</p>
               </div>
               <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -172,12 +186,12 @@ const Meetings = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="glass-card p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-600">Upcoming</p>
-                <p className="text-2xl font-bold text-purple-600">3</p>
+                <p className="text-2xl font-bold text-purple-600">{upcomingList.length}</p>
               </div>
               <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -186,12 +200,12 @@ const Meetings = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="glass-card p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-600">Overdue</p>
-                <p className="text-2xl font-bold text-red-600">3</p>
+                <p className="text-2xl font-bold text-red-600">{overdueList.length}</p>
               </div>
               <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
