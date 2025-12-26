@@ -1,7 +1,25 @@
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAppDispatch, useAppSelector } from '../store/hooks'
+import { navigateTo, navigateBack } from '../store/slices/navigationSlice'
 
 const CardScanner = () => {
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
+  const previousPages = useAppSelector((state) => state.navigation.previousPages)
+
+  useEffect(() => {
+    dispatch(navigateTo({ page: '/card-scanner' }))
+  }, [dispatch])
+
+  const handleBack = () => {
+    if (previousPages.length > 0) {
+      dispatch(navigateBack())
+      navigate(-1)
+    } else {
+      navigate('/dashboard')
+    }
+  }
 
   return (
     <div className="min-h-screen p-8">
@@ -9,7 +27,7 @@ const CardScanner = () => {
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-4">
             <button
-              onClick={() => navigate(-1)}
+              onClick={handleBack}
               className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
               title="Go back"
             >

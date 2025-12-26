@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
 import { setActiveSection, setActiveSubSection } from '../../store/slices/dashboardSlice'
-
+import { navigateTo } from '../../store/slices/navigationSlice'
 import { fetchDashboardSummary, DateRangePreset } from '../../services/api'
 import { useQuery } from '@tanstack/react-query'
+
 
 interface SidebarItem {
   id: string
@@ -47,6 +48,8 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
         </svg>
       ),
+      isLink: true,
+      link: '/dashboard',
     },
     {
       id: 'kpis',
@@ -57,12 +60,12 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
         </svg>
       ),
       subItems: [
-        { id: 'overview', label: 'Overview', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg> },
+        { id: 'overview', label: 'Overview', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>, isLink: true, link: '/dashboard' },
         { id: 'leads', label: 'Leads', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>, isLink: true, link: '/leads' },
-        { id: 'contacts-touched', label: 'Contacts Touched', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>, value: summaryData?.contacts_touched },
-        { id: 'meetings-completed', label: 'Meetings Completed', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>, value: summaryData?.funnel_breakdown.meetings_completed },
-        { id: 'emails-drafted', label: 'Emails Drafted', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>, value: summaryData?.emails_drafted },
-        { id: 'conversion-rate', label: 'Conversion Rate', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg> },
+        { id: 'contacts-touched', label: 'Contacts Touched', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>, value: summaryData?.contacts_touched, isLink: true, link: '/dashboard' },
+        { id: 'meetings-completed', label: 'Meetings Completed', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>, value: summaryData?.funnel_breakdown.meetings_completed, isLink: true, link: '/meetings' },
+        { id: 'emails-drafted', label: 'Emails Drafted', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>, value: summaryData?.emails_drafted, isLink: true, link: '/emails' },
+        { id: 'conversion-rate', label: 'Conversion Rate', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>, isLink: true, link: '/dashboard' },
       ],
     },
     {
@@ -74,24 +77,29 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
         </svg>
       ),
       subItems: [
-        {
-          id: 'followup-meeting',
-          label: 'Follow-up Meeting',
-          icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-          subItems: [
-            { id: 'meeting-overdue', label: 'Overdue', icon: <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>, value: summaryData?.overdue_followups_count },
-          ],
-        },
-        { id: 'completed-meeting', label: 'Completed Meeting', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
-        { id: 'upcoming-meeting', label: 'Upcoming Meeting', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>, value: summaryData?.upcoming_meetings_count },
+        { id: 'upcoming-meeting', label: 'Upcoming Meeting', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>, value: summaryData?.upcoming_meetings_count, isLink: true, link: '/meetings' },
+        { id: 'completed-meeting', label: 'Completed Meeting', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>, isLink: true, link: '/meetings' },
       ],
     },
   ]
 
   const handleItemClick = (itemId: string, isSubItem: boolean = false, item?: SidebarItem, parentId?: string) => {
+    // #region agent log
+    fetch('http://127.0.0.1:7244/ingest/f0ecc01d-46ea-4f76-a56b-1fc5d56c63a4',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DashboardSidebar.tsx:84',message:'handleItemClick called',data:{itemId,isSubItem,isLink:item?.isLink,link:item?.link},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     // Handle navigation links
     if (item?.isLink && item.link) {
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/f0ecc01d-46ea-4f76-a56b-1fc5d56c63a4',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DashboardSidebar.tsx:87',message:'Before dispatch navigateTo',data:{link:item.link},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
+      dispatch(navigateTo({ page: item.link }))
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/f0ecc01d-46ea-4f76-a56b-1fc5d56c63a4',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DashboardSidebar.tsx:90',message:'After dispatch, before navigate',data:{link:item.link},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
       navigate(item.link)
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/f0ecc01d-46ea-4f76-a56b-1fc5d56c63a4',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DashboardSidebar.tsx:92',message:'After navigate call',data:{link:item.link},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
       return
     }
 
@@ -142,12 +150,32 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
 
       {/* Menu Items */}
       <div className="flex-1 overflow-y-auto py-4">
+        {/* Dashboard Section */}
+        <div className="px-3 mb-4">
+          {menuItems.filter(item => item.id === 'dashboard').map((item) => (
+            <div key={item.id}>
+              <button
+                onClick={() => handleItemClick(item.id, false, item)}
+                className={`group w-full px-3 py-2.5 flex items-center justify-between text-left transition-all rounded-lg ${activeSection === item.id
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
+                  }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <span>{item.icon}</span>
+                  <span className="font-medium text-sm">{item.label}</span>
+                </div>
+              </button>
+            </div>
+          ))}
+        </div>
+
         {/* KPIs Section */}
         <div className="px-3 mb-4">
           {menuItems.filter(item => item.id === 'kpis').map((item) => (
             <div key={item.id}>
               <button
-                onClick={() => handleItemClick(item.id)}
+                onClick={() => handleItemClick(item.id, false, item)}
                 className={`group w-full px-3 py-2.5 flex items-center justify-between text-left transition-all rounded-lg ${activeSection === item.id
                   ? 'bg-blue-600 text-white shadow-md'
                   : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
@@ -176,7 +204,12 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
                   {item.subItems.map((subItem) => (
                     <button
                       key={subItem.id}
-                      onClick={() => handleItemClick(subItem.id, true, subItem, item.id)}
+                      onClick={(e) => {
+                        // #region agent log
+                        fetch('http://127.0.0.1:7244/ingest/f0ecc01d-46ea-4f76-a56b-1fc5d56c63a4',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DashboardSidebar.tsx:183',message:'Sidebar button clicked',data:{subItemId:subItem.id,isLink:subItem.isLink,link:subItem.link,defaultPrevented:e.defaultPrevented},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+                        // #endregion
+                        handleItemClick(subItem.id, true, subItem, item.id)
+                      }}
                       className={`group w-full px-3 py-2 flex items-center justify-between text-left transition-all rounded-lg ${activeSubSection === subItem.id
                         ? 'bg-white text-slate-900 shadow-sm'
                         : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
@@ -202,7 +235,7 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
           {menuItems.filter(item => item.id === 'meetings').map((item) => (
             <div key={item.id}>
               <button
-                onClick={() => handleItemClick(item.id)}
+                onClick={() => handleItemClick(item.id, false, item)}
                 className={`group w-full px-3 py-2.5 flex items-center justify-between text-left transition-all rounded-lg ${activeSection === item.id
                   ? 'bg-white text-slate-900 shadow-sm'
                   : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
@@ -228,77 +261,29 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
               {/* Sub Items */}
               {item.subItems && expandedSections.includes(item.id) && (
                 <div className="mt-2 ml-3 space-y-1">
-                  {item.subItems.map((subItem) => {
-                    // Handle nested sub-items (like Follow-up Meeting -> Overdue)
-                    if (subItem.subItems) {
-                      return (
-                        <div key={subItem.id}>
-                          <button
-                            onClick={() => toggleSection(subItem.id)}
-                            className={`group w-full px-3 py-2 flex items-center justify-between text-left transition-all rounded-lg ${activeSubSection?.startsWith(subItem.id)
-                              ? 'bg-white text-slate-900 shadow-sm'
-                              : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
-                              }`}
-                          >
-                            <div className="flex items-center space-x-2">
-                              <span>{subItem.icon}</span>
-                              <span className="text-sm">{subItem.label}</span>
-                            </div>
-                            <svg
-                              className={`w-3 h-3 transition-all ${expandedSections.includes(subItem.id) ? 'rotate-90' : ''
-                                }`}
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                          </button>
-                          {expandedSections.includes(subItem.id) && subItem.subItems && (
-                            <div className="ml-3 mt-1 space-y-1">
-                              {subItem.subItems.map((nestedItem) => (
-                                <button
-                                  key={nestedItem.id}
-                                  onClick={() => handleItemClick(nestedItem.id, true, nestedItem, item.id)}
-                                  className={`w-full px-3 py-2 flex items-center justify-between text-left transition-all rounded-lg ${activeSubSection === nestedItem.id
-                                    ? 'bg-white text-slate-900 shadow-sm'
-                                    : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
-                                    }`}
-                                >
-                                  <div className="flex items-center space-x-2">
-                                    <span>{nestedItem.icon}</span>
-                                    <span className="text-sm">{nestedItem.label}</span>
-                                  </div>
-                                  {nestedItem.value !== undefined && (
-                                    <span className="font-semibold text-sm text-slate-700">{nestedItem.value}</span>
-                                  )}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )
-                    }
-                    // Regular sub-items
-                    return (
-                      <button
-                        key={subItem.id}
-                        onClick={() => handleItemClick(subItem.id, true, subItem, item.id)}
-                        className={`group w-full px-3 py-2 flex items-center justify-between text-left transition-all rounded-lg ${activeSubSection === subItem.id
-                          ? 'bg-white text-slate-900 shadow-sm'
-                          : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
-                          }`}
-                      >
-                        <div className="flex items-center space-x-2">
-                          <span>{subItem.icon}</span>
-                          <span className="text-sm">{subItem.label}</span>
-                        </div>
-                        {subItem.value !== undefined && (
-                          <span className="font-semibold text-sm text-slate-700">{subItem.value}</span>
-                        )}
-                      </button>
-                    )
-                  })}
+                  {item.subItems.map((subItem) => (
+                    <button
+                      key={subItem.id}
+                      onClick={(e) => {
+                        // #region agent log
+                        fetch('http://127.0.0.1:7244/ingest/f0ecc01d-46ea-4f76-a56b-1fc5d56c63a4',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DashboardSidebar.tsx:245',message:'Sidebar button clicked (Meeting)',data:{subItemId:subItem.id,isLink:subItem.isLink,link:subItem.link,defaultPrevented:e.defaultPrevented},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+                        // #endregion
+                        handleItemClick(subItem.id, true, subItem, item.id)
+                      }}
+                      className={`group w-full px-3 py-2 flex items-center justify-between text-left transition-all rounded-lg ${activeSubSection === subItem.id
+                        ? 'bg-white text-slate-900 shadow-sm'
+                        : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
+                        }`}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <span>{subItem.icon}</span>
+                        <span className="text-sm">{subItem.label}</span>
+                      </div>
+                      {subItem.value !== undefined && (
+                        <span className="font-semibold text-sm text-slate-700">{subItem.value}</span>
+                      )}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>

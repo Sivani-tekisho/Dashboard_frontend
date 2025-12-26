@@ -1,7 +1,15 @@
 import { useNavigate } from 'react-router-dom'
+import { useAppDispatch } from '../../store/hooks'
+import { navigateTo } from '../../store/slices/navigationSlice'
 
 const QuickActions = () => {
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
+
+  const handleNavigation = (path: string) => {
+    dispatch(navigateTo({ page: path }))
+    navigate(path)
+  }
 
   const actions = [
     {
@@ -14,7 +22,7 @@ const QuickActions = () => {
         </svg>
       ),
       color: 'bg-purple-600 hover:bg-purple-700',
-      onClick: () => navigate('/card-scanner'),
+      onClick: () => handleNavigation('/card-scanner'),
     },
     {
       id: 'search-contact',
@@ -26,7 +34,7 @@ const QuickActions = () => {
         </svg>
       ),
       color: 'bg-purple-400 hover:bg-purple-500',
-      onClick: () => navigate('/dashboard'),
+      onClick: () => handleNavigation('/leads'),
     },
     {
       id: 'start-meeting',
@@ -38,7 +46,7 @@ const QuickActions = () => {
         </svg>
       ),
       color: 'bg-green-600 hover:bg-green-700',
-      onClick: () => navigate('/meetings'),
+      onClick: () => handleNavigation('/meetings'),
     },
     {
       id: 'draft-email',
@@ -50,7 +58,7 @@ const QuickActions = () => {
         </svg>
       ),
       color: 'bg-orange-600 hover:bg-orange-700',
-      onClick: () => navigate('/emails'),
+      onClick: () => handleNavigation('/emails'),
     },
   ]
 
@@ -81,4 +89,5 @@ const QuickActions = () => {
 }
 
 export default QuickActions
+
 

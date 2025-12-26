@@ -1,4 +1,14 @@
+import { useEffect } from 'react'
+import { useAppDispatch } from '../store/hooks'
+import { navigateTo } from '../store/slices/navigationSlice'
+
 const Home = () => {
+  const dispatch = useAppDispatch()
+
+  useEffect(() => {
+    dispatch(navigateTo({ page: '/' }))
+  }, [dispatch])
+
   return (
     <div className="min-h-screen flex items-center justify-center p-8">
       <div className="max-w-6xl w-full">

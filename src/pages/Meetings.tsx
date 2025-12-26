@@ -1,13 +1,22 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import DashboardSidebar from '../components/Dashboard/DashboardSidebar'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { useAppDispatch, useAppSelector } from '../store/hooks'
+import { navigateTo, navigateBack } from '../store/slices/navigationSlice'
+import { setUpcomingMeetings, setCompletedMeetings } from '../store/slices/meetingsSlice'
 import { fetchUpcomingMeetings, fetchCompletedMeetings } from '../services/api'
 
 
 const Meetings = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
+  const previousPages = useAppSelector((state) => state.navigation.previousPages)
+
+  useEffect(() => {
+    dispatch(navigateTo({ page: '/meetings' }))
+  }, [dispatch])
 
   const { data: upcomingData } = useQuery({
     queryKey: ['upcomingMeetingsFull'],
@@ -16,34 +25,46 @@ const Meetings = () => {
 
   const { data: completedData } = useQuery({
     queryKey: ['completedMeetings'],
-    queryFn: () => fetchCompletedMeetings(50)
+    queryFn: () => fetchCompletedMeetings()
   })
 
-  // Show all scheduled meetings in "Upcoming" list.
-  // We can filter overdue into a separate list if we want, or just show them all in Upcoming.
-  // The user requested that "scheduled things are there it need to shown in this page".
-  // So I'll populate upcomingList with all non-completed scheduled meetings.
+  useEffect(() => {
+    if (upcomingData) {
+      dispatch(setUpcomingMeetings(upcomingData as any))
+    }
+    if (completedData) {
+      dispatch(setCompletedMeetings(completedData as any))
+    }
+  }, [upcomingData, completedData, dispatch])
+
   const upcomingList = upcomingData || []
   const completedList = completedData || []
 
-  // Overdue logic: if scheduled_at < now
-  const overdueList = upcomingData?.filter(m => m.scheduled_at && new Date(m.scheduled_at) <= new Date()) || []
+  const handleBack = () => {
+    if (previousPages.length > 0) {
+      // Get the previous page from Redux state before popping
+      const previousPage = previousPages[previousPages.length - 1]
+      dispatch(navigateBack())
+      // Navigate to the previous page from Redux state
+      if (previousPage) {
+        navigate(previousPage)
+      } else {
+        navigate('/dashboard')
+      }
+    } else {
+      navigate('/dashboard')
+    }
+  }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="flex h-[calc(100vh-4rem)]">
       <DashboardSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
       <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50">
         <div className="mb-6 flex items-center justify-between">
           <div>
             <div className="flex items-center space-x-3 mb-1">
               <button
-                onClick={() => {
-                  if (window.history.length > 1) {
-                    navigate(-1)
-                  } else {
-                    navigate('/')
-                  }
-                }}
+                onClick={handleBack}
                 className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                 title="Go back"
               >
@@ -67,7 +88,7 @@ const Meetings = () => {
         </div>
 
         {/* Meeting Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Upcoming Meetings */}
           <div className="glass-card p-6">
             <div className="flex items-center justify-between mb-4">
@@ -124,37 +145,6 @@ const Meetings = () => {
               )}
             </div>
           </div>
-
-          {/* Overdue Follow-ups */}
-          <div className="glass-card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-slate-900">Overdue Follow-ups</h2>
-              <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-
-            <div className="space-y-4 max-h-[400px] overflow-y-auto">
-              {overdueList?.length === 0 ? (
-                <p className="text-slate-500 text-sm">No overdue meetings.</p>
-              ) : (
-                overdueList?.map(m => (
-                  <div key={m.meeting_id} className="border-l-4 border-red-500 pl-4 py-2">
-                    <p className="font-semibold text-slate-900">{m.contact_name || 'Meeting'}</p>
-                    <p className="text-sm text-red-600">
-                      {m.scheduled_at ? `Scheduled: ${new Date(m.scheduled_at).toLocaleDateString()}` : 'Date unknown'}
-                    </p>
-                    <button
-                      onClick={() => navigate('/meetings')}
-                      className="mt-2 bg-red-500 text-white px-4 py-1.5 rounded-lg hover:bg-red-600 transition-colors text-sm"
-                    >
-                      Reschedule
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
         </div>
 
         {/* Meeting Statistics */}
@@ -196,20 +186,6 @@ const Meetings = () => {
               <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <div className="glass-card p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-600">Overdue</p>
-                <p className="text-2xl font-bold text-red-600">{overdueList.length}</p>
-              </div>
-              <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
             </div>

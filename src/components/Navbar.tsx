@@ -1,10 +1,19 @@
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { useAppDispatch } from '../store/hooks'
+import { navigateTo } from '../store/slices/navigationSlice'
 
 const Navbar = () => {
   const location = useLocation()
+  const navigate = useNavigate()
+  const dispatch = useAppDispatch()
 
   const isActive = (path: string) => {
     return location.pathname === path
+  }
+
+  const handleNavigate = (path: string) => {
+    dispatch(navigateTo({ page: path }))
+    navigate(path)
   }
 
   return (
@@ -21,8 +30,8 @@ const Navbar = () => {
 
           {/* Navigation Links */}
           <div className="flex items-center space-x-1">
-            <Link
-              to="/"
+            <button
+              onClick={() => handleNavigate('/')}
               className={`px-4 py-2 rounded-lg transition-all ${
                 isActive('/')
                   ? 'text-blue-600 bg-blue-50/70 backdrop-blur-sm'
@@ -30,10 +39,10 @@ const Navbar = () => {
               }`}
             >
               <span className="font-medium">Home</span>
-            </Link>
+            </button>
 
-            <Link
-              to="/card-scanner"
+            <button
+              onClick={() => handleNavigate('/card-scanner')}
               className={`px-4 py-2 rounded-lg transition-all ${
                 isActive('/card-scanner')
                   ? 'text-blue-600 bg-blue-50/70 backdrop-blur-sm'
@@ -41,10 +50,10 @@ const Navbar = () => {
               }`}
             >
               <span className="font-medium">Card Scanner</span>
-            </Link>
+            </button>
 
-            <Link
-              to="/dashboard"
+            <button
+              onClick={() => handleNavigate('/dashboard')}
               className={`px-4 py-2 rounded-lg transition-all ${
                 isActive('/dashboard')
                   ? 'text-blue-600 bg-blue-50/70 backdrop-blur-sm'
@@ -52,10 +61,10 @@ const Navbar = () => {
               }`}
             >
               <span className="font-medium">Dashboard</span>
-            </Link>
+            </button>
 
-            <Link
-              to="/meetings"
+            <button
+              onClick={() => handleNavigate('/meetings')}
               className={`px-4 py-2 rounded-lg transition-all ${
                 isActive('/meetings')
                   ? 'text-blue-600 bg-blue-50/70 backdrop-blur-sm'
@@ -63,10 +72,10 @@ const Navbar = () => {
               }`}
             >
               <span className="font-medium">Meetings</span>
-            </Link>
+            </button>
 
-            <Link
-              to="/emails"
+            <button
+              onClick={() => handleNavigate('/emails')}
               className={`px-4 py-2 rounded-lg transition-all ${
                 isActive('/emails')
                   ? 'text-blue-600 bg-blue-50/70 backdrop-blur-sm'
@@ -74,7 +83,7 @@ const Navbar = () => {
               }`}
             >
               <span className="font-medium">Emails</span>
-            </Link>
+            </button>
           </div>
 
           {/* Right Side Actions */}

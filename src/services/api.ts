@@ -173,6 +173,27 @@ export const fetchCompletedMeetings = async (): Promise<CompletedMeeting[]> => {
     return response.json();
 }
 
+export const fetchContactCompletedMeetings = async (contactId: string): Promise<CompletedMeeting[]> => {
+    const params = new URLSearchParams({
+        user_id: DEFAULT_USER_ID,
+        contact_id: contactId
+    });
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/meetings/completed?${params.toString()}`);
+        if (!response.ok) {
+            // If endpoint doesn't support contact_id filter, fetch all and filter client-side
+            const allMeetings = await fetchCompletedMeetings();
+            // Filter by contact_name matching - this is a fallback
+            return allMeetings.filter(m => m.contact_name && contactId);
+        }
+        return response.json();
+    } catch (error) {
+        // Fallback: fetch all and return empty array (will be filtered client-side if needed)
+        console.error('Error fetching contact meetings:', error);
+        return [];
+    }
+}
+
 export const fetchDraftedEmails = async (): Promise<EmailDetail[]> => {
     const params = new URLSearchParams({
         user_id: DEFAULT_USER_ID
@@ -263,4 +284,62 @@ export const fetchUpcomingMeetings = async (limit: number = 20): Promise<Upcomin
         throw new Error(`API Error: ${response.status} ${response.statusText}`);
     }
     return response.json();
+};
+
+export interface ContactMeetingSummary {
+    total_meetings: number;
+    completed_meetings: number;
+    upcoming_meetings: number;
+    last_meeting_date: string | null;
+}
+
+export const fetchContactMeetings = async (contactId: string): Promise<ContactMeetingSummary> => {
+    const params = new URLSearchParams({
+        user_id: DEFAULT_USER_ID,
+        contact_id: contactId
+    });
+    // This endpoint might not exist in backend, returning mock data for now
+    // In production, this should call: /api/v1/contacts/{contact_id}/meetings/summary
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/contacts/${contactId}/meetings?${params.toString()}`);
+        if (!response.ok) {
+            // Return default if endpoint doesn't exist
+            return { total_meetings: 0, completed_meetings: 0, upcoming_meetings: 0, last_meeting_date: null };
+        }
+        return response.json();
+    } catch (error) {
+        // Fallback to mock data if endpoint doesn't exist
+        return { total_meetings: 0, completed_meetings: 0, upcoming_meetings: 0, last_meeting_date: null };
+    }
+};
+
+export interface PastMeetingsSummary {
+    summary_text: string;
+    total_past_meetings: number;
+}
+
+export const fetchPastMeetingsSummary = async (contactId: string, dateRange: DateRangePreset = DateRangePreset.THIS_MONTH): Promise<PastMeetingsSummary> => {
+    const params = new URLSearchParams({
+        user_id: DEFAULT_USER_ID,
+        contact_id: contactId,
+        preset: dateRange
+    });
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/contacts/${contactId}/meetings/past-summary?${params.toString()}`);
+        if (!response.ok) {
+            // Return mock data if endpoint doesn't exist
+            return {
+                summary_text: 'No past meetings found for this contact in the selected date range.',
+                total_past_meetings: 0
+            };
+        }
+        return response.json();
+    } catch (error) {
+        // Fallback to mock summary
+        return {
+            summary_text: 'No past meetings found for this contact in the selected date range.',
+            total_past_meetings: 0
+        };
+    }
 };

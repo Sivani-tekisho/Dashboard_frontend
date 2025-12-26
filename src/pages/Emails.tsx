@@ -1,19 +1,43 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAppDispatch, useAppSelector } from '../store/hooks'
+import { navigateTo, navigateBack } from '../store/slices/navigationSlice'
 import DashboardSidebar from '../components/Dashboard/DashboardSidebar'
 
 const Emails = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
+  const previousPages = useAppSelector((state) => state.navigation.previousPages)
+
+  useEffect(() => {
+    dispatch(navigateTo({ page: '/emails' }))
+  }, [dispatch])
+
+  const handleBack = () => {
+    if (previousPages.length > 0) {
+      // Get the previous page from Redux state before popping
+      const previousPage = previousPages[previousPages.length - 1]
+      dispatch(navigateBack())
+      // Navigate to the previous page from Redux state
+      if (previousPage) {
+        navigate(previousPage)
+      } else {
+        navigate('/dashboard')
+      }
+    } else {
+      navigate('/dashboard')
+    }
+  }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="flex h-[calc(100vh-4rem)]">
       <DashboardSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
       <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50">
         <div className="mb-6">
           <div className="flex items-center space-x-3 mb-1">
             <button
-              onClick={() => navigate(-1)}
+              onClick={handleBack}
               className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
               title="Go back"
             >

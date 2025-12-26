@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useAppSelector, useAppDispatch } from '../../store/hooks'
 import { setActiveSection, setActiveSubSection } from '../../store/slices/dashboardSlice'
+import { navigateTo } from '../../store/slices/navigationSlice'
 import { fetchContacts, fetchDashboardSummary, SearchItem, fetchUpcomingMeetings } from '../../services/api'
 import KPIOverview from './KPIs/KPIOverview'
 import ContactsTouched from './KPIs/ContactsTouched'
@@ -14,6 +15,11 @@ const DashboardContent = () => {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const { activeSection, activeSubSection } = useAppSelector((state) => state.dashboard)
+
+  const handleNavigation = (path: string) => {
+    dispatch(navigateTo({ page: path }))
+    navigate(path)
+  }
 
   // Search State
   const [searchTerm, setSearchTerm] = useState('')
@@ -39,10 +45,7 @@ const DashboardContent = () => {
     refetchInterval: 60000
   });
 
-  const now = new Date();
-  // Show ALL scheduled meetings in the Upcoming list, even if technically overdue, so user sees them.
   const upcomingMeetings = upcomingMeetingsData || [];
-  const overdueMeetings = upcomingMeetingsData?.filter(m => m.scheduled_at && new Date(m.scheduled_at) <= now) || [];
 
   // Memoize currentDate to prevent recalculation on every render
   const currentDate = useMemo(() => {
@@ -110,36 +113,35 @@ const DashboardContent = () => {
         return <EmailsDrafted />
       case 'conversion-rate':
         return <ConversionRate />
-      case 'meeting-overdue':
+      case 'upcoming-meeting':
         return (
           <div className="space-y-6">
             <div className="glass-card p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-slate-900">Overdue Follow-ups</h2>
-                <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <h2 className="text-xl font-semibold text-slate-900">Upcoming Meetings</h2>
+                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
               <div className="space-y-4">
-                {overdueMeetings.length === 0 ? (
-                  <p className="text-slate-500 text-sm">No overdue meetings.</p>
+                {upcomingMeetings.length === 0 ? (
+                  <p className="text-slate-500 text-sm">No upcoming meetings.</p>
                 ) : (
-                  overdueMeetings.map(meeting => (
+                  upcomingMeetings.map(meeting => (
                     <div
                       key={meeting.meeting_id}
-                      onClick={() => navigate('/meetings')}
-                      className="border-l-4 border-red-500 pl-4 py-4 cursor-pointer hover:bg-red-50/50 rounded-r-lg transition-colors"
+                      onClick={() => handleNavigation('/meetings')}
+                      className="border-l-4 border-blue-500 pl-4 py-4 cursor-pointer hover:bg-blue-50/50 rounded-r-lg transition-colors"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
-                          <p className="font-semibold text-slate-900 text-base mb-1">{meeting.contact_name} - Follow Up</p>
-                          <p className="text-sm text-red-600 mb-1">Overdue</p>
+                          <p className="font-semibold text-slate-900 text-base mb-1">{meeting.contact_name}</p>
                           <p className="text-xs text-slate-500">Scheduled for: {meeting.scheduled_at ? new Date(meeting.scheduled_at).toLocaleString() : 'N/A'}</p>
                         </div>
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
-                            navigate('/meetings')
+                            handleNavigation('/meetings')
                           }}
                           className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium ml-4"
                         >
@@ -153,7 +155,7 @@ const DashboardContent = () => {
             </div>
 
             {/* Meeting Statistics */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="glass-card p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -195,55 +197,12 @@ const DashboardContent = () => {
                   </div>
                 </div>
               </div>
-
-              <div className="glass-card p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-slate-600">Overdue</p>
-                    <p className="text-2xl font-bold text-red-600">{summary?.overdue_followups_count || 0}</p>
-                  </div>
-                  <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center">
-                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         )
       case 'meetings-completed': // Fallthrough or explicit return
       case 'completed-meeting':
         return <CompletedMeetingDetails />
-      case 'upcoming-meeting':
-        return (
-          <div className="glass-card p-6">
-            <h2 className="text-xl font-semibold text-slate-900 mb-4">Upcoming Meetings</h2>
-            <div className="space-y-4">
-              {upcomingMeetings.length === 0 ? (
-                <p className="text-slate-500">No upcoming meetings.</p>
-              ) : (
-                upcomingMeetings.map(meeting => (
-                  <div key={meeting.meeting_id} className="border-l-4 border-blue-600 pl-4 py-3 bg-blue-50 rounded-r-lg">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <p className="font-semibold text-slate-900">{meeting.contact_name}</p>
-                        <p className="text-sm text-slate-600 mt-1">{meeting.scheduled_at ? new Date(meeting.scheduled_at).toLocaleString() : 'Date TBD'}</p>
-                        <p className="text-xs text-slate-500 mt-1">Status: {meeting.status}</p>
-                      </div>
-                      <button
-                        onClick={() => navigate('/meetings')}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm ml-4"
-                      >
-                        Join Meeting
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        )
       default:
         return (
           <div className="space-y-6">
@@ -315,8 +274,10 @@ const DashboardContent = () => {
                         setSearchTerm('') // Clear search
                         setShowResults(false) // Hide dropdown
                         if (result.type === 'contact') {
-                          navigate('/leads', { state: { highlightContactId: result.id } })
+                          dispatch(navigateTo({ page: `/leads/${result.id}`, data: { leadId: result.id } }))
+                          navigate(`/leads/${result.id}`)
                         } else if (result.type === 'meeting') {
+                          dispatch(navigateTo({ page: '/meetings' }))
                           navigate('/meetings')
                         }
                       }}
