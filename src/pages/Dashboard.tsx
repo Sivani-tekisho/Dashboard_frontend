@@ -6,7 +6,7 @@ const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20">
+    <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-50">
       <DashboardSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
       <DashboardContent />
     </div>

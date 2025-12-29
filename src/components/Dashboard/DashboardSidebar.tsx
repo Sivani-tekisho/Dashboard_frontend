@@ -47,6 +47,8 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
         </svg>
       ),
+      isLink: true,
+      link: '/dashboard',
     },
     {
       id: 'kpis',
@@ -57,12 +59,12 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
         </svg>
       ),
       subItems: [
-        { id: 'overview', label: 'Overview', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg> },
+        { id: 'overview', label: 'Overview', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>, isLink: true, link: '/dashboard' },
         { id: 'leads', label: 'Leads', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>, isLink: true, link: '/leads' },
-        { id: 'contacts-touched', label: 'Contacts Touched', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>, value: summaryData?.contacts_touched },
-        { id: 'meetings-completed', label: 'Meetings Completed', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>, value: summaryData?.funnel_breakdown.meetings_completed },
-        { id: 'emails-drafted', label: 'Emails Drafted', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>, value: summaryData?.emails_drafted },
-        { id: 'conversion-rate', label: 'Conversion Rate', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg> },
+        { id: 'contacts-touched', label: 'Contacts Touched', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>, value: summaryData?.contacts_touched, isLink: true, link: '/dashboard' },
+        { id: 'meetings-completed', label: 'Meetings Completed', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>, value: summaryData?.funnel_breakdown.meetings_completed, isLink: true, link: '/dashboard' },
+        { id: 'emails-drafted', label: 'Emails Drafted', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>, value: summaryData?.emails_drafted, isLink: true, link: '/dashboard' },
+        { id: 'conversion-rate', label: 'Conversion Rate', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>, isLink: true, link: '/dashboard' },
       ],
     },
     {
@@ -74,14 +76,6 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
         </svg>
       ),
       subItems: [
-        {
-          id: 'followup-meeting',
-          label: 'Follow-up Meeting',
-          icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-          subItems: [
-            { id: 'meeting-overdue', label: 'Overdue', icon: <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>, value: summaryData?.overdue_followups_count },
-          ],
-        },
         { id: 'completed-meeting', label: 'Completed Meeting', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
         { id: 'upcoming-meeting', label: 'Upcoming Meeting', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>, value: summaryData?.upcoming_meetings_count },
       ],
@@ -89,22 +83,41 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
   ]
 
   const handleItemClick = (itemId: string, isSubItem: boolean = false, item?: SidebarItem, parentId?: string) => {
-    // Handle navigation links
+    // For dashboard sub-items, set the Redux state first, then navigate
+    if (item?.isLink && item.link === '/dashboard') {
+      // Set the active sections for dashboard content
+      if (isSubItem && parentId) {
+        dispatch(setActiveSection(parentId))
+        dispatch(setActiveSubSection(itemId))
+      }
+      // Navigate to dashboard
+      navigate(item.link)
+      return
+    }
+
+    // For other navigation links (non-dashboard), just navigate
     if (item?.isLink && item.link) {
       navigate(item.link)
       return
     }
 
-    if (isSubItem) {
-      // Set both the sub-section and the parent section
-      if (parentId) {
-        dispatch(setActiveSection(parentId))
-      }
-      dispatch(setActiveSubSection(itemId))
-    } else {
-      dispatch(setActiveSection(itemId))
-      if (menuItems.find((item) => item.id === itemId)?.subItems) {
+    // For items without direct links, expand/collapse the section
+    if (!isSubItem) {
+      if (menuItems.find((menuItem) => menuItem.id === itemId)?.subItems) {
         toggleSection(itemId)
+      }
+    }
+
+    // Only dispatch Redux actions if this is for Dashboard-specific state
+    // (when we're actually ON the /dashboard page showing different content)
+    if (window.location.pathname === '/dashboard') {
+      if (isSubItem) {
+        if (parentId) {
+          dispatch(setActiveSection(parentId))
+        }
+        dispatch(setActiveSubSection(itemId))
+      } else {
+        dispatch(setActiveSection(itemId))
       }
     }
   }
@@ -123,15 +136,15 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
   }
 
   return (
-    <div className="w-64 bg-slate-50 border-r border-slate-200 flex flex-col h-full">
+    <div className="w-64 glass-sidebar flex flex-col h-full relative" style={{ zIndex: 100, pointerEvents: 'auto' }}>
       {/* Sidebar Header */}
-      <div className="p-5 border-b border-slate-200 flex items-center justify-between bg-white">
+      <div className="p-5 border-b border-blue-200 flex items-center justify-between bg-white/80">
         <div className="flex items-center space-x-2">
           <span className="text-slate-800 font-semibold text-lg">Dashboard</span>
         </div>
         <button
           onClick={onToggle}
-          className="text-slate-400 hover:text-slate-600 transition-colors"
+          className="text-blue-400 hover:text-blue-600 transition-colors"
           title="Close sidebar"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -142,6 +155,25 @@ const DashboardSidebar = ({ isOpen, onToggle }: { isOpen: boolean; onToggle: () 
 
       {/* Menu Items */}
       <div className="flex-1 overflow-y-auto py-4">
+        {/* Dashboard Link */}
+        <div className="px-3 mb-4">
+          {menuItems.filter(item => item.id === 'dashboard').map((item) => (
+            <button
+              key={item.id}
+              onClick={() => handleItemClick(item.id, false, item)}
+              className={`group w-full px-3 py-2.5 flex items-center justify-between text-left transition-all rounded-lg ${activeSection === item.id
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'text-slate-600 hover:bg-blue-50 hover:text-blue-600'
+                }`}
+            >
+              <div className="flex items-center space-x-3">
+                <span>{item.icon}</span>
+                <span className="font-medium text-sm">{item.label}</span>
+              </div>
+            </button>
+          ))}
+        </div>
+
         {/* KPIs Section */}
         <div className="px-3 mb-4">
           {menuItems.filter(item => item.id === 'kpis').map((item) => (

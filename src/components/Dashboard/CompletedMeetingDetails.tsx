@@ -20,7 +20,7 @@ const CompletedMeetingDetails = () => {
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['completedMeetings'] });
       queryClient.invalidateQueries({ queryKey: ['contacts'] }); // Refresh leads to show new status
-      queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] }); 
+      queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
       alert("MoM Saved & Analysis Started!");
     },
     onError: (err) => {
@@ -81,20 +81,29 @@ const CompletedMeetingDetails = () => {
   }
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-slate-900 mb-4">Completed Meetings</h2>
+    <div className="space-y-6">
+      <h2 className="text-2xl font-semibold text-slate-900">Completed Meetings ({meetingList.length})</h2>
       {meetingList.map((meeting) => (
-        <div key={meeting.meeting_id} className="glass-card p-5">
+        <div key={meeting.meeting_id} className="glass-card p-5 hover:shadow-lg transition-all">
           <div className="flex items-start justify-between mb-3">
-            <div className="flex-1">
-              <div className="flex items-center space-x-2 mb-2">
-                <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center space-x-4 flex-1">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="px-3 py-1 bg-green-500 text-white text-xs font-semibold rounded-full">Completed</span>
-                <span className="text-sm text-slate-600">{meeting.date}</span>
               </div>
-              <p className="font-semibold text-slate-900 text-lg">{meeting.title}</p>
+              <div className="flex-1">
+                <h3 className="font-semibold text-slate-900 text-base mb-1">{meeting.title}</h3>
+                <div className="flex items-center space-x-3">
+                  <p className="text-sm text-slate-600 flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {meeting.date}
+                  </p>
+                  <span className="badge-blue px-2 py-0.5 rounded text-xs font-medium">Completed</span>
+                </div>
+              </div>
             </div>
             <button
               onClick={() => toggleMeeting(meeting.meeting_id)}
@@ -116,50 +125,50 @@ const CompletedMeetingDetails = () => {
             <div className="mt-4 pt-4 border-t border-slate-200 space-y-4 animate-in slide-in-from-top-2 duration-200">
               <div>
                 <p className="text-sm font-medium text-slate-700 mb-2">Meeting Summary / MOM:</p>
-                
+
                 {meeting.mom_exists ? (
-                   // Read Mode
-                   <div className="bg-blue-50/50 p-3 rounded-lg border border-blue-100">
-                      <p className="text-sm text-slate-600 leading-relaxed">
-                        {meeting.mom_text || meeting.summary || "Summary content not loaded."}
-                      </p>
-                      <div className="mt-2 flex items-center space-x-2">
-                         <span className="text-xs text-green-600 font-medium flex items-center">
-                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                            Analysis Complete
-                         </span>
-                      </div>
-                   </div>
+                  // Read Mode
+                  <div className="bg-blue-50/50 p-3 rounded-lg border border-blue-100">
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      {meeting.mom_text || meeting.summary || "Summary content not loaded."}
+                    </p>
+                    <div className="mt-2 flex items-center space-x-2">
+                      <span className="text-xs text-blue-600 font-medium flex items-center">
+                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                        Analysis Complete
+                      </span>
+                    </div>
+                  </div>
                 ) : (
-                   // Edit Mode
-                   <div className="space-y-3">
-                      <textarea 
-                        className="w-full text-sm text-slate-600 bg-white p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm"
-                        rows={4}
-                        placeholder="Type the meeting summary here to generate AI analysis..."
-                        value={momInputs[meeting.meeting_id] || ''}
-                        onChange={(e) => handleMoMChange(meeting.meeting_id, e.target.value)}
-                      />
-                      <div className="flex justify-end">
-                        <button 
-                          onClick={() => handleSaveMoM(meeting.meeting_id)}
-                          disabled={mutation.isPending}
-                          className="bg-brand-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 flex items-center space-x-2"
-                        >
-                           {mutation.isPending ? (
-                             <>
-                               <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                               <span>Analyzing...</span>
-                             </>
-                           ) : (
-                             <>
-                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                               <span>Generate AI Analysis</span>
-                             </>
-                           )}
-                        </button>
-                      </div>
-                   </div>
+                  // Edit Mode
+                  <div className="space-y-3">
+                    <textarea
+                      className="w-full text-sm text-slate-600 bg-white p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm"
+                      rows={4}
+                      placeholder="Type the meeting summary here to generate AI analysis..."
+                      value={momInputs[meeting.meeting_id] || ''}
+                      onChange={(e) => handleMoMChange(meeting.meeting_id, e.target.value)}
+                    />
+                    <div className="flex justify-end">
+                      <button
+                        onClick={() => handleSaveMoM(meeting.meeting_id)}
+                        disabled={mutation.isPending}
+                        className="bg-brand-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 flex items-center space-x-2"
+                      >
+                        {mutation.isPending ? (
+                          <>
+                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                            <span>Analyzing...</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                            <span>Generate AI Analysis</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>

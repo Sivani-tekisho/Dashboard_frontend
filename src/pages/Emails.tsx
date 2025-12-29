@@ -7,14 +7,14 @@ const Emails = () => {
   const navigate = useNavigate()
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-50">
       <DashboardSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
-      <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50">
+      <div className="flex-1 overflow-y-auto p-6">
         <div className="mb-6">
           <div className="flex items-center space-x-3 mb-1">
             <button
               onClick={() => navigate(-1)}
-              className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              className="btn-secondary p-2 rounded-lg"
               title="Go back"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,7 +41,7 @@ const Emails = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="glass-card p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -55,7 +55,7 @@ const Emails = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="glass-card p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -69,7 +69,7 @@ const Emails = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="glass-card p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -91,12 +91,12 @@ const Emails = () => {
           <div className="p-6 border-b border-slate-200">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-slate-900">Email Drafts</h2>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+              <button className="btn-primary px-4 py-2 rounded-lg text-sm">
                 Compose New
               </button>
             </div>
           </div>
-          
+
           <div className="divide-y divide-slate-200">
             {/* Email Item */}
             <div className="p-6 hover:bg-slate-50 transition-colors cursor-pointer">

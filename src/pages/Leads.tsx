@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
+import React from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import DashboardSidebar from '../components/Dashboard/DashboardSidebar'
-import { fetchAllContacts, Contact } from '../services/api'
+import { fetchAllContacts, Contact, fetchCompletedMeetings, CompletedMeeting } from '../services/api'
 
 const Leads = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -10,6 +11,7 @@ const Leads = () => {
   const location = useLocation()
 
   const [expandedContactId, setExpandedContactId] = useState<string | null>(null)
+  const [meetingDropdownOpen, setMeetingDropdownOpen] = useState<string | null>(null)
 
   useEffect(() => {
     if (location.state?.highlightContactId) {
@@ -18,8 +20,30 @@ const Leads = () => {
     }
   }, [location.state])
 
-  const toggleExpand = (id: string) => {
-    setExpandedContactId(prev => prev === id ? null : id)
+
+  // Fetch completed meetings for past meeting summaries
+  const { data: completedMeetings } = useQuery<CompletedMeeting[], Error>({
+    queryKey: ['completedMeetings'],
+    queryFn: fetchCompletedMeetings,
+  })
+
+  const toggleMeetingDropdown = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setMeetingDropdownOpen(prev => prev === id ? null : id)
+  }
+
+  // Get past meetings for a contact by matching name/company
+  const getPastMeetingsForContact = (lead: Contact): CompletedMeeting[] => {
+    if (!completedMeetings || !lead) return []
+
+    const leadName = lead.company_name || `${lead.first_name || ''} ${lead.last_name || ''}`.trim()
+    if (!leadName) return []
+
+    return completedMeetings.filter(m => {
+      const meetingName = (m.company_name || m.contact_name || '').toLowerCase()
+      const searchName = leadName.toLowerCase()
+      return meetingName.includes(searchName) || searchName.includes(meetingName)
+    }).slice(0, 5) // Limit to 5 most recent
   }
 
   const { data: leads, isLoading, error } = useQuery<Contact[], Error>({
@@ -74,14 +98,14 @@ const Leads = () => {
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-50">
       <DashboardSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
-      <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50">
+      <div className="flex-1 overflow-y-auto p-6">
         <div className="mb-6">
           <div className="flex items-center space-x-3 mb-1">
             <button
               onClick={() => navigate(-1)}
-              className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              className="btn-secondary p-2 rounded-lg"
               title="Go back"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,12 +167,9 @@ const Leads = () => {
         </div>
 
         {/* Leads Table */}
-        <div className="glass-card p-6">
+        <div className="glass-card p-6" style={{ position: 'relative', zIndex: 1 }}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-slate-900">All Leads</h2>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
-              Add Lead
-            </button>
           </div>
 
           {isLoading ? (
@@ -157,7 +178,7 @@ const Leads = () => {
             <div className="text-center py-8 text-red-500">Error loading contacts</div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full" style={{ position: 'relative' }}>
                 <thead>
                   <tr className="border-b border-slate-200">
                     <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Name</th>
@@ -170,12 +191,10 @@ const Leads = () => {
                 </thead>
                 <tbody>
                   {leads?.map((lead) => (
-                    <>
+                    <React.Fragment key={lead.contact_id}>
                       <tr
-                        key={lead.contact_id}
-                        className={`border-b border-slate-100 transition-colors cursor-pointer ${expandedContactId === lead.contact_id ? 'bg-blue-50 border-blue-200' : 'hover:bg-slate-50'
+                        className={`border-b border-slate-100 transition-colors ${expandedContactId === lead.contact_id ? 'bg-blue-50 border-blue-200' : 'hover:bg-slate-50'
                           }`}
-                        onClick={() => toggleExpand(lead.contact_id)}
                       >
                         <td className="py-3 px-4">
                           <div className="flex items-center">
@@ -199,75 +218,102 @@ const Leads = () => {
                           <p className="text-sm text-slate-600">{formatDate(lead.last_activity_at || lead.created_at)}</p>
                         </td>
                         <td className="py-3 px-4">
-                          <div className="flex items-center space-x-2">
+                          {getPastMeetingsForContact(lead).length > 0 && (
                             <button
-                              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                              onClick={(e) => { e.stopPropagation(); toggleExpand(lead.contact_id); }}
+                              className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center space-x-1"
+                              onClick={(e) => { e.stopPropagation(); toggleMeetingDropdown(lead.contact_id, e); }}
                             >
-                              {expandedContactId === lead.contact_id ? 'Hide' : 'View'}
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                              <span>Meetings ({getPastMeetingsForContact(lead).length})</span>
+                              <svg
+                                className={`w-3 h-3 transition-transform ${meetingDropdownOpen === lead.contact_id ? 'rotate-180' : ''}`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
                             </button>
-                          </div>
+                          )}
+                          {meetingDropdownOpen === lead.contact_id && (
+                            <div
+                              className="absolute right-0 mt-2 w-[400px] bg-white rounded-lg shadow-xl border border-blue-200 z-30 p-4 max-h-80 overflow-y-auto"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <div className="space-y-3">
+                                {getPastMeetingsForContact(lead).map((meeting, idx) => (
+                                  <div key={meeting.meeting_id} className="pb-3 border-b border-slate-200 last:border-0">
+                                    <p className="text-xs text-slate-500 mb-1.5">
+                                      {meeting.scheduled_at ? new Date(meeting.scheduled_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Date unknown'}
+                                    </p>
+                                    <p className="text-sm text-slate-700 leading-relaxed">
+                                      {meeting.mom_text || 'No MOM available'}
+                                    </p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </td>
                       </tr>
                       {expandedContactId === lead.contact_id && (
                         <tr className="bg-blue-50/50 animate-in fade-in active-row-detail">
                           <td colSpan={5} className="py-4 px-6 border-b border-blue-100">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                              <div className="space-y-3">
-                                <h4 className="font-semibold text-slate-800 border-b border-blue-200 pb-1">Professional Details</h4>
-                                <div className="grid grid-cols-[100px_1fr] gap-2">
-                                  <span className="text-slate-500">Designation:</span>
-                                  <span className="font-medium text-slate-700">{lead.designation || 'N/A'}</span>
-
-                                  <span className="text-slate-500">Company:</span>
-                                  <span className="font-medium text-slate-700">{lead.company_name || 'N/A'}</span>
+                            <div className="space-y-6">
+                              <h4 className="font-semibold text-slate-800 border-b border-blue-200 pb-2 text-base">Past Meeting MOM Details</h4>
+                              {getPastMeetingsForContact(lead).length === 0 ? (
+                                <div className="text-center py-8">
+                                  <p className="text-slate-500 text-sm">No past meetings found for this contact.</p>
                                 </div>
-                              </div>
-
-                              <div className="space-y-3">
-                                <h4 className="font-semibold text-slate-800 border-b border-blue-200 pb-1">Contact Information</h4>
-
-                                {/* Emails */}
-                                <div className="mb-2">
-                                  <p className="text-slate-500 mb-1">Emails:</p>
-                                  <div className="flex flex-wrap gap-2">
-                                    {lead.emails && lead.emails.length > 0 ? (
-                                      lead.emails.map((e, idx) => (
-                                        <span key={idx} className="bg-white border border-blue-100 px-2 py-1 rounded text-slate-700 flex items-center shadow-sm">
-                                          {e.email}
-                                          {e.is_primary && <span className="ml-2 px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">Primary</span>}
-                                          {e.type && <span className="ml-1 text-slate-400 text-xs">({e.type})</span>}
-                                        </span>
-                                      ))
-                                    ) : (
-                                      <span className="text-slate-400 italic">No emails recorded</span>
-                                    )}
-                                  </div>
+                              ) : (
+                                <div className="space-y-4">
+                                  {getPastMeetingsForContact(lead).map((meeting) => (
+                                    <div key={meeting.meeting_id} className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
+                                      <div className="flex items-start justify-between mb-3">
+                                        <div className="flex-1">
+                                          <div className="flex items-center space-x-2 mb-2">
+                                            <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Completed</span>
+                                            <span className="text-sm text-slate-600">
+                                              {meeting.scheduled_at ? new Date(meeting.scheduled_at).toLocaleDateString('en-US', {
+                                                month: 'short',
+                                                day: 'numeric',
+                                                year: 'numeric',
+                                                hour: 'numeric',
+                                                minute: '2-digit'
+                                              }) : 'Date unknown'}
+                                            </span>
+                                          </div>
+                                          <p className="font-semibold text-slate-900 text-base mb-1">
+                                            {meeting.contact_name || 'Meeting'} {meeting.company_name && `- ${meeting.company_name}`}
+                                          </p>
+                                        </div>
+                                      </div>
+                                      <div className="mt-3 pt-3 border-t border-slate-200">
+                                        <p className="text-xs font-medium text-slate-600 mb-2">Meeting Minutes (MOM):</p>
+                                        {meeting.mom_text ? (
+                                          <div className="bg-blue-50/50 p-3 rounded-lg border border-blue-100">
+                                            <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+                                              {meeting.mom_text}
+                                            </p>
+                                          </div>
+                                        ) : (
+                                          <p className="text-sm text-slate-400 italic">No meeting minutes available for this meeting.</p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
                                 </div>
-
-                                {/* Phones */}
-                                <div>
-                                  <p className="text-slate-500 mb-1">Phones:</p>
-                                  <div className="flex flex-wrap gap-2">
-                                    {lead.phones && lead.phones.length > 0 ? (
-                                      lead.phones.map((p, idx) => (
-                                        <span key={idx} className="bg-white border border-green-100 px-2 py-1 rounded text-slate-700 flex items-center shadow-sm">
-                                          {p.phone_number}
-                                          {p.is_primary && <span className="ml-2 px-1.5 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">Primary</span>}
-                                          {p.type && <span className="ml-1 text-slate-400 text-xs">({p.type})</span>}
-                                        </span>
-                                      ))
-                                    ) : (
-                                      <span className="text-slate-400 italic">No phones recorded</span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
+                              )}
                             </div>
                           </td>
                         </tr>
                       )}
-                    </>
+                    </React.Fragment>
                   ))}
                   {(!leads || leads.length === 0) && (
                     <tr>

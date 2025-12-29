@@ -110,138 +110,57 @@ const DashboardContent = () => {
         return <EmailsDrafted />
       case 'conversion-rate':
         return <ConversionRate />
-      case 'meeting-overdue':
-        return (
-          <div className="space-y-6">
-            <div className="glass-card p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-slate-900">Overdue Follow-ups</h2>
-                <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="space-y-4">
-                {overdueMeetings.length === 0 ? (
-                  <p className="text-slate-500 text-sm">No overdue meetings.</p>
-                ) : (
-                  overdueMeetings.map(meeting => (
-                    <div
-                      key={meeting.meeting_id}
-                      onClick={() => navigate('/meetings')}
-                      className="border-l-4 border-red-500 pl-4 py-4 cursor-pointer hover:bg-red-50/50 rounded-r-lg transition-colors"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <p className="font-semibold text-slate-900 text-base mb-1">{meeting.contact_name} - Follow Up</p>
-                          <p className="text-sm text-red-600 mb-1">Overdue</p>
-                          <p className="text-xs text-slate-500">Scheduled for: {meeting.scheduled_at ? new Date(meeting.scheduled_at).toLocaleString() : 'N/A'}</p>
-                        </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            navigate('/meetings')
-                          }}
-                          className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium ml-4"
-                        >
-                          Join Meeting
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {/* Meeting Statistics */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="glass-card p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-slate-600">Total Meetings</p>
-                    <p className="text-2xl font-bold text-blue-600">{(summary?.funnel_breakdown.meetings_scheduled || 0) + (summary?.funnel_breakdown.meetings_completed || 0)}</p>
-                  </div>
-                  <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
-                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              <div className="glass-card p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-slate-600">Completed</p>
-                    <p className="text-2xl font-bold text-green-600">{summary?.funnel_breakdown.meetings_completed || 0}</p>
-                  </div>
-                  <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center">
-                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              <div className="glass-card p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-slate-600">Upcoming</p>
-                    <p className="text-2xl font-bold text-purple-600">{summary?.funnel_breakdown.meetings_scheduled || 0}</p>
-                  </div>
-                  <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center">
-                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              <div className="glass-card p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-slate-600">Overdue</p>
-                    <p className="text-2xl font-bold text-red-600">{summary?.overdue_followups_count || 0}</p>
-                  </div>
-                  <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center">
-                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )
       case 'meetings-completed': // Fallthrough or explicit return
       case 'completed-meeting':
         return <CompletedMeetingDetails />
       case 'upcoming-meeting':
         return (
-          <div className="glass-card p-6">
-            <h2 className="text-xl font-semibold text-slate-900 mb-4">Upcoming Meetings</h2>
-            <div className="space-y-4">
-              {upcomingMeetings.length === 0 ? (
-                <p className="text-slate-500">No upcoming meetings.</p>
-              ) : (
-                upcomingMeetings.map(meeting => (
-                  <div key={meeting.meeting_id} className="border-l-4 border-blue-600 pl-4 py-3 bg-blue-50 rounded-r-lg">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <p className="font-semibold text-slate-900">{meeting.contact_name}</p>
-                        <p className="text-sm text-slate-600 mt-1">{meeting.scheduled_at ? new Date(meeting.scheduled_at).toLocaleString() : 'Date TBD'}</p>
-                        <p className="text-xs text-slate-500 mt-1">Status: {meeting.status}</p>
+          <div className="space-y-6">
+            <h2 className="text-2xl font-semibold text-slate-900">Upcoming Meetings ({upcomingMeetings.length})</h2>
+
+            {upcomingMeetings.length === 0 ? (
+              <div className="glass-card p-12 text-center">
+                <svg className="w-16 h-16 mx-auto text-slate-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p className="text-slate-500 text-lg font-medium">No upcoming meetings</p>
+                <p className="text-slate-400 text-sm mt-2">Schedule a meeting to get started</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {upcomingMeetings.map(meeting => (
+                  <div key={meeting.meeting_id} className="glass-card p-5 flex items-center justify-between hover:shadow-lg transition-all">
+                    <div className="flex items-center space-x-4 flex-1">
+                      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
                       </div>
-                      <button
-                        onClick={() => navigate('/meetings')}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm ml-4"
-                      >
-                        Join Meeting
-                      </button>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-slate-900 text-base">{meeting.contact_name}</h3>
+                        <div className="flex items-center space-x-3 mt-1">
+                          <p className="text-sm text-slate-600 flex items-center">
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            {meeting.scheduled_at ? new Date(meeting.scheduled_at).toLocaleString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Date TBD'}
+                          </p>
+                          <span className="badge-blue px-2 py-0.5 rounded text-xs font-medium">
+                            {meeting.status || 'scheduled'}
+                          </span>
+                        </div>
+                      </div>
                     </div>
+                    <button
+                      onClick={() => navigate('/meetings')}
+                      className="btn-primary px-6 py-2 rounded-lg text-sm font-medium ml-4"
+                    >
+                      Join Meeting
+                    </button>
                   </div>
-                ))
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         )
       default:
@@ -275,7 +194,7 @@ const DashboardContent = () => {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 bg-white">
+    <div className="flex-1 overflow-y-auto p-8">
       {/* Header Section */}
       <div className="mb-8">
         <div className="flex items-start justify-between mb-6">
@@ -292,23 +211,23 @@ const DashboardContent = () => {
               <input
                 type="text"
                 placeholder="Search contacts or companies..."
-                className="bg-white/60 backdrop-blur-md border border-slate-200/50 rounded-lg pl-10 pr-4 py-2 text-slate-700 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100/50 text-sm w-64"
+                className="input-glass rounded-lg pl-10 pr-4 py-2 text-slate-700 text-sm w-64"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onBlur={() => setTimeout(() => setShowResults(false), 200)}
                 onFocus={() => { if (searchTerm) setShowResults(true) }}
               />
-              <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
 
               {/* Search Results Dropdown */}
               {showResults && searchResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-slate-200 py-2 max-h-96 overflow-y-auto z-50">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-blue-200 py-2 max-h-96 overflow-y-auto z-50">
                   {searchResults.map((result) => (
                     <div
                       key={result.id}
-                      className="px-4 py-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0"
+                      className="px-4 py-3 hover:bg-blue-50 cursor-pointer border-b border-slate-100 last:border-0"
                       onMouseDown={(e) => {
                         e.preventDefault(); // Prevent input blur
                         console.log('Clicked result:', result)
@@ -326,7 +245,7 @@ const DashboardContent = () => {
                           <p className="text-sm font-medium text-slate-900">{result.title}</p>
                           {result.subtitle && <p className="text-xs text-slate-500">{result.subtitle}</p>}
                         </div>
-                        <span className="text-xs px-2 py-1 bg-slate-100 rounded-full text-slate-600 capitalize">
+                        <span className="text-xs px-2 py-1 badge-blue rounded-full capitalize">
                           {result.type}
                         </span>
                       </div>
@@ -336,7 +255,7 @@ const DashboardContent = () => {
               )}
             </div>
 
-            <select className="bg-white/60 backdrop-blur-md border border-slate-200/50 rounded-lg px-4 py-2 text-slate-700 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100/50 text-sm">
+            <select className="input-glass rounded-lg px-4 py-2 text-slate-700 text-sm">
               <option>This Month</option>
               <option>This Week</option>
               <option>Quarter</option>

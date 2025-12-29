@@ -1,171 +1,296 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import DashboardSidebar from '../components/Dashboard/DashboardSidebar'
-import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { fetchUpcomingMeetings, fetchCompletedMeetings } from '../services/api'
-
+import { fetchUpcomingMeetings, fetchCompletedMeetings, fetchDashboardSummary } from '../services/api'
 
 const Meetings = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const navigate = useNavigate()
+  const [activeTab, setActiveTab] = useState<'upcoming' | 'completed'>('upcoming')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedMonth, setSelectedMonth] = useState('all')
 
   const { data: upcomingData } = useQuery({
     queryKey: ['upcomingMeetingsFull'],
-    queryFn: () => fetchUpcomingMeetings(50)
+    queryFn: () => fetchUpcomingMeetings(20)
   })
 
   const { data: completedData } = useQuery({
     queryKey: ['completedMeetings'],
-    queryFn: () => fetchCompletedMeetings(50)
+    queryFn: () => fetchCompletedMeetings()
   })
 
-  // Show all scheduled meetings in "Upcoming" list.
-  // We can filter overdue into a separate list if we want, or just show them all in Upcoming.
-  // The user requested that "scheduled things are there it need to shown in this page".
-  // So I'll populate upcomingList with all non-completed scheduled meetings.
+  const { data: summary } = useQuery({
+    queryKey: ['dashboardSummary'],
+    queryFn: () => fetchDashboardSummary(),
+  })
+
+  const userName = summary?.user_full_name || localStorage.getItem('userName') || 'Shivani'
+
   const upcomingList = upcomingData || []
   const completedList = completedData || []
 
-  // Overdue logic: if scheduled_at < now
-  const overdueList = upcomingData?.filter(m => m.scheduled_at && new Date(m.scheduled_at) <= new Date()) || []
+  // Format current date
+  const currentDate = useMemo(() => {
+    const date = new Date()
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  }, [])
+
+  // Format meeting date and time
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    })
+  }
+
+  // Filter meetings based on search and month
+  const filterMeetings = (meetings: any[]) => {
+    return meetings.filter(meeting => {
+      // Search filter
+      const matchesSearch = searchTerm === '' ||
+        (meeting.contact_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (meeting.company_name?.toLowerCase().includes(searchTerm.toLowerCase()))
+
+      // Month filter
+      let matchesMonth = true
+      if (selectedMonth !== 'all' && meeting.scheduled_at) {
+        const meetingDate = new Date(meeting.scheduled_at)
+        const currentDate = new Date()
+
+        if (selectedMonth === 'this_week') {
+          const weekAgo = new Date()
+          weekAgo.setDate(currentDate.getDate() - 7)
+          matchesMonth = meetingDate >= weekAgo && meetingDate <= currentDate
+        } else if (selectedMonth === 'this_month') {
+          matchesMonth = meetingDate.getMonth() === currentDate.getMonth() &&
+            meetingDate.getFullYear() === currentDate.getFullYear()
+        } else if (selectedMonth === 'quarter') {
+          const quarter = Math.floor(currentDate.getMonth() / 3)
+          const meetingQuarter = Math.floor(meetingDate.getMonth() / 3)
+          matchesMonth = meetingQuarter === quarter &&
+            meetingDate.getFullYear() === currentDate.getFullYear()
+        } else if (selectedMonth === 'this_year') {
+          matchesMonth = meetingDate.getFullYear() === currentDate.getFullYear()
+        }
+      }
+
+      return matchesSearch && matchesMonth
+    })
+  }
+
+  const filteredUpcomingMeetings = filterMeetings(upcomingList)
+  const filteredCompletedMeetings = filterMeetings(completedList)
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-50">
       <DashboardSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
-      <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <div className="flex items-center space-x-3 mb-1">
-              <button
-                onClick={() => {
-                  if (window.history.length > 1) {
-                    navigate(-1)
-                  } else {
-                    navigate('/')
-                  }
-                }}
-                className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                title="Go back"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+      <div className="flex-1 overflow-y-auto p-8">
+        {/* Header Section */}
+        <div className="mb-8">
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-800 mb-2">
+                Good morning, {userName}
+              </h1>
+              <p className="text-slate-500 text-sm">{currentDate}</p>
+            </div>
+
+            {/* Search and Filter */}
+            <div className="flex items-center space-x-3">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search contacts or companies..."
+                  className="input-glass rounded-lg pl-10 pr-4 py-2 text-slate-700 text-sm w-64"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-              </button>
-              <h1 className="text-2xl font-bold text-slate-900">Meetings</h1>
-            </div>
-            <p className="text-slate-600 text-sm ml-11">Manage your meetings and schedule follow-ups</p>
-          </div>
-          <button
-            onClick={() => navigate('/meetings')}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm flex items-center space-x-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            <span>Create Meeting</span>
-          </button>
-        </div>
+              </div>
 
-        {/* Meeting Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Upcoming Meetings */}
-          <div className="glass-card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-slate-900">Upcoming Meetings</h2>
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </div>
-
-            <div className="space-y-4 max-h-[400px] overflow-y-auto">
-              {upcomingList?.length === 0 ? (
-                <p className="text-slate-500 text-sm">No upcoming meetings scheduled.</p>
-              ) : (
-                upcomingList?.map(m => (
-                  <div key={m.meeting_id} className="border-l-4 border-blue-500 pl-4 py-2">
-                    <p className="font-semibold text-slate-900">{m.contact_name || 'Meeting'}</p>
-                    <p className="text-sm text-slate-600">
-                      {m.scheduled_at ? new Date(m.scheduled_at).toLocaleString() : 'N/A'}
-                    </p>
-                    <button
-                      onClick={() => { }}
-                      className="mt-2 bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition-colors text-sm"
-                    >
-                      Join Meeting
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Completed Meetings */}
-          <div className="glass-card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-slate-900">Completed Meetings</h2>
-              <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-
-            <div className="space-y-4 max-h-[400px] overflow-y-auto">
-              {completedList?.length === 0 ? (
-                <p className="text-slate-500 text-sm">No completed meetings.</p>
-              ) : (
-                completedList?.map(m => (
-                  <div key={m.meeting_id} className="border-l-4 border-gray-300 pl-4 py-2">
-                    <p className="font-semibold text-slate-900">{m.contact_name || 'Meeting'}</p>
-                    <p className="text-sm text-slate-600">
-                      {m.scheduled_at ? new Date(m.scheduled_at).toLocaleString() : 'N/A'}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">Completed</p>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Overdue Follow-ups */}
-          <div className="glass-card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-slate-900">Overdue Follow-ups</h2>
-              <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-
-            <div className="space-y-4 max-h-[400px] overflow-y-auto">
-              {overdueList?.length === 0 ? (
-                <p className="text-slate-500 text-sm">No overdue meetings.</p>
-              ) : (
-                overdueList?.map(m => (
-                  <div key={m.meeting_id} className="border-l-4 border-red-500 pl-4 py-2">
-                    <p className="font-semibold text-slate-900">{m.contact_name || 'Meeting'}</p>
-                    <p className="text-sm text-red-600">
-                      {m.scheduled_at ? `Scheduled: ${new Date(m.scheduled_at).toLocaleDateString()}` : 'Date unknown'}
-                    </p>
-                    <button
-                      onClick={() => navigate('/meetings')}
-                      className="mt-2 bg-red-500 text-white px-4 py-1.5 rounded-lg hover:bg-red-600 transition-colors text-sm"
-                    >
-                      Reschedule
-                    </button>
-                  </div>
-                ))
-              )}
+              <select
+                className="input-glass rounded-lg px-4 py-2 text-slate-700 text-sm"
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+              >
+                <option value="all">All Time</option>
+                <option value="this_week">This Week</option>
+                <option value="this_month">This Month</option>
+                <option value="quarter">Quarter</option>
+                <option value="this_year">This Year</option>
+              </select>
             </div>
           </div>
         </div>
+
+        {/* Tabs */}
+        <div className="mb-6 border-b border-slate-200">
+          <nav className="flex space-x-8">
+            <button
+              onClick={() => setActiveTab('upcoming')}
+              className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'upcoming'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                }`}
+            >
+              Upcoming Meetings ({filteredUpcomingMeetings.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('completed')}
+              className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'completed'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                }`}
+            >
+              Completed Meetings ({filteredCompletedMeetings.length})
+            </button>
+          </nav>
+        </div>
+
+        {/* Meeting Content */}
+        {activeTab === 'upcoming' ? (
+          <div className="space-y-3">
+            {filteredUpcomingMeetings.length === 0 ? (
+              <div className="glass-card p-12 text-center">
+                <svg className="w-16 h-16 mx-auto text-slate-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p className="text-slate-500 text-lg font-medium">No upcoming meetings found</p>
+                <p className="text-slate-400 text-sm mt-2">
+                  {searchTerm || selectedMonth !== 'all'
+                    ? 'Try adjusting your filters'
+                    : 'Schedule a meeting to get started'}
+                </p>
+              </div>
+            ) : (
+              filteredUpcomingMeetings.map((meeting) => (
+                <div
+                  key={meeting.meeting_id}
+                  className="glass-card p-5 flex items-center justify-between hover:shadow-lg transition-all"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-slate-900 text-lg">
+                          {meeting.contact_name || 'Meeting'}
+                        </h3>
+                        {meeting.company_name && (
+                          <p className="text-sm text-slate-500">{meeting.company_name}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-4 ml-13">
+                      <div className="flex items-center text-sm text-slate-600">
+                        <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        {meeting.scheduled_at ? formatDateTime(meeting.scheduled_at) : 'Date TBD'}
+                      </div>
+                      <span className="badge-blue px-3 py-1 rounded-full text-xs font-medium">
+                        {meeting.status || 'scheduled'}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      console.log('Joining meeting:', meeting.meeting_id)
+                    }}
+                    className="btn-primary px-6 py-2.5 rounded-lg text-sm font-medium"
+                  >
+                    Join Meeting
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {filteredCompletedMeetings.length === 0 ? (
+              <div className="glass-card p-12 text-center">
+                <svg className="w-16 h-16 mx-auto text-slate-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-slate-500 text-lg font-medium">No completed meetings found</p>
+                <p className="text-slate-400 text-sm mt-2">
+                  {searchTerm || selectedMonth !== 'all'
+                    ? 'Try adjusting your filters'
+                    : 'Completed meetings will appear here'}
+                </p>
+              </div>
+            ) : (
+              filteredCompletedMeetings.map((meeting) => (
+                <div
+                  key={meeting.meeting_id}
+                  className="glass-card p-5 flex items-center justify-between hover:shadow-lg transition-all"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-slate-900 text-lg">
+                          {meeting.contact_name || 'Meeting'}
+                        </h3>
+                        {meeting.company_name && (
+                          <p className="text-sm text-slate-500">{meeting.company_name}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-4 ml-13">
+                      <div className="flex items-center text-sm text-slate-600">
+                        <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        {meeting.scheduled_at ? formatDateTime(meeting.scheduled_at) : 'N/A'}
+                      </div>
+                      <span className="badge-green px-3 py-1 rounded-full text-xs font-medium">
+                        Completed
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      console.log('Viewing meeting:', meeting.meeting_id)
+                    }}
+                    className="btn-secondary px-6 py-2.5 rounded-lg text-sm font-medium text-blue-600"
+                  >
+                    View Details
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        )}
 
         {/* Meeting Statistics */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="glass-card p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Total Meetings</p>
-                <p className="text-2xl font-bold text-blue-600">{(upcomingList.length + completedList.length)}</p>
+                <p className="text-sm text-slate-600 mb-1">Total Meetings</p>
+                <p className="text-2xl font-bold text-blue-600">{upcomingList.length + completedList.length}</p>
               </div>
-              <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
@@ -176,10 +301,10 @@ const Meetings = () => {
           <div className="glass-card p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Completed</p>
+                <p className="text-sm text-slate-600 mb-1">Completed</p>
                 <p className="text-2xl font-bold text-green-600">{completedList.length}</p>
               </div>
-              <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -190,26 +315,12 @@ const Meetings = () => {
           <div className="glass-card p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Upcoming</p>
-                <p className="text-2xl font-bold text-purple-600">{upcomingList.length}</p>
+                <p className="text-sm text-slate-600 mb-1">Upcoming</p>
+                <p className="text-2xl font-bold text-blue-600">{upcomingList.length}</p>
               </div>
-              <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <div className="glass-card p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-600">Overdue</p>
-                <p className="text-2xl font-bold text-red-600">{overdueList.length}</p>
-              </div>
-              <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
             </div>
